@@ -91,35 +91,43 @@ reviewer의 `full-branch` 리뷰 시 diff 기준점이 되는 base branch를 감
 
 감지 완료 후 아래 형태로 메모리에 보관한다:
 
+개별 센서가 감지된 경우:
+
 ```json
 {
   "project": "/path/to/project",
   "package_manager": "pnpm",
   "sensors": {
-    "lint": { "command": "pnpm lint", "cost": "low", "when": "every_change" },
-    "typecheck": {
-      "command": "pnpm typecheck",
-      "cost": "low",
-      "when": "every_change"
-    },
-    "test": {
-      "command": "pnpm test",
-      "cost": "medium",
-      "when": "every_change"
-    },
-    "build": { "command": "pnpm build", "cost": "medium", "when": "pre_commit" }
+    "lint": { "command": "pnpm lint" },
+    "typecheck": { "command": "pnpm typecheck" },
+    "test": { "command": "pnpm test" },
+    "build": { "command": "pnpm build" }
   },
   "base_branch": "dev",
   "detected_at": "2026-06-05"
 }
 ```
 
+`check` 스크립트(lint+typecheck 통합)가 감지된 경우:
+
+```json
+{
+  "project": "/path/to/project",
+  "package_manager": "pnpm",
+  "sensors": {
+    "check": { "command": "pnpm check" },
+    "test": { "command": "pnpm test" },
+    "build": { "command": "pnpm build" }
+  },
+  "base_branch": "dev",
+  "detected_at": "2026-06-05"
+}
+```
+
+`check` 키가 존재하면 `lint`와 `typecheck` 키는 생략한다. 오케스트레이터가 실행 후 reviewer에게 전달할 때 `lint: pass, typecheck: pass`로 분리한다.
+
 ## 실행 시점
 
-| 시점                | 실행할 센서           | 이유                              |
-| ------------------- | --------------------- | --------------------------------- |
-| 매 변경 후          | lint, typecheck, test | 빠르고 쌈 (computational)         |
-| full-branch 리뷰 전 | build + 위 전부       | 머지 전 최종 확인                 |
-| reviewer spawn 전   | lint, typecheck, test | computational이 잡을 건 먼저 잡기 |
+어떤 센서를 언제 실행할지는 오케스트레이터가 scope에 따라 결정한다. `personas/orchestrator.md`의 "Computational 센서 실행" 섹션이 단일 출처다.
 
-computational 센서가 실패하면 reviewer를 spawn하지 않는다. LLM 토큰을 아끼는 핵심 지점.
+이 문서는 센서를 **감지하고 바인딩**하는 역할만 담당한다. 실행 정책은 오케스트레이터에 있다.
