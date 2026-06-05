@@ -11,6 +11,7 @@ const TARGETS = {
     agents: join(HOME, ".claude", "agents"),
     skills: join(HOME, ".claude", "skills", "seoyoung"),
     commands: join(HOME, ".claude", "commands"),
+    adapters: join(HOME, ".claude", "skills", "seoyoung", "adapters"),
   },
 } as const
 
@@ -27,9 +28,16 @@ const dryRun = args.includes("--dry-run")
 const targetFilter = args.find((a) => a.startsWith("--target="))?.split("=")[1] as
   | Target
   | undefined
-const targetFlag = args.includes("--target")
-  ? (args[args.indexOf("--target") + 1] as Target)
+const targetFlagValue = args.includes("--target")
+  ? (args[args.indexOf("--target") + 1] as Target | undefined)
   : targetFilter
+
+if (args.includes("--target") && !targetFlagValue) {
+  console.error("error: --target requires a value (e.g., --target claude)")
+  process.exit(1)
+}
+
+const targetFlag = targetFlagValue
 
 async function listMdFiles(dir: string): Promise<string[]> {
   if (!existsSync(dir)) return []
@@ -125,6 +133,13 @@ async function syncTarget(target: Target) {
     "commands → commands"
   )
   printResult("commands → commands", commandsResult)
+
+  const adaptersResult = await syncDir(
+    join(SRC, "adapters"),
+    paths.adapters,
+    "adapters → adapters"
+  )
+  printResult("adapters → adapters", adaptersResult)
 }
 
 async function main() {

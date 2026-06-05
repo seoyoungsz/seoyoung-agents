@@ -12,9 +12,9 @@ description: base branch 이후 전체 커밋에 대해 computational 센서 + i
 2. base_branch 확인 (sensor-cache에서 읽기)
 3. `git diff {base_branch}...HEAD`로 diff 생성
 4. computational 센서 실행 (lint, typecheck, test, build)
-5. 센서 실패 시 → 결과 보고 후 종료
+5. 센서 실패 시 → 결과 보고 후 종료 (standalone 명령이므로 implementer 반환 없음)
 6. 센서 통과 시 → reviewer를 scope: full-branch로 spawn
-7. reviewer에게 전달: diff, computational_sensor_results, attempt_number: 1
+7. reviewer에게 전달: diff, computational_sensor_results, attempt_number: 1, must_verify_behaviors: []
 8. reviewer의 review_result를 보고
 
 ## 참조

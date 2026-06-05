@@ -50,7 +50,7 @@ planner, implementer, reviewer, handoff, architect, qa-expert, linear-expert, sl
 - done_criteria — 검증 가능한 완료 조건
 - must_verify_behaviors — 반드시 검증해야 할 동작 목록
 - attempt_number — 몇 번째 시도인지
-- review findings — 재dispatch 시 이전 리뷰 findings
+- review_findings — 재dispatch 시 이전 `review_result.findings` 배열 (high severity만 전달)
 
 ### 전문가 persona 호출
 
@@ -79,6 +79,7 @@ spawn 시 해당 persona의 `related_guides`를 확인하고, 나열된 guide를
 | Terraform, IaC | infrastructure-as-code |
 | CI/CD 설정 (.github/workflows/) | ci-cd |
 | 모니터링, 알림 설정 | monitoring |
+| 인증, 인가, 보안 미들웨어 (auth/, middleware/) | security |
 | AWS 리소스, 인프라 설정 | aws |
 | Git 워크플로우, 브랜치 전략 | git-workflow |
 
@@ -94,7 +95,9 @@ spawn 시 해당 persona의 `related_guides`를 확인하고, 나열된 guide를
 
 ### Unit-level 리뷰
 
-복잡한 요청: 기본값 off. 사용자가 명시적으로 요청한 경우에만 활성화. full-branch 리뷰가 최종 게이트이므로 중복을 피한다.
+복잡한 요청: 기본값 off. 다음 경우에 활성화:
+- 사용자가 명시적으로 요청
+- planner가 `review_strategy: "unit + full-branch"`를 추천하고 사용자가 plan 승인 시 수락
 
 단순한 요청: 기본값 on. planner와 full-branch 리뷰가 없으므로 unit 리뷰가 유일한 inferential 게이트다.
 
@@ -168,9 +171,14 @@ spawn manifest 검증 (아래 기준)
     ↓
 implementer × N spawn (conflict-safe 단위는 병렬로)
     ↓
-computational 센서 실행
+[unit-level 리뷰가 활성화된 경우]
+    computational 센서 실행 (unit scope)
+    → reviewer spawn (scope: unit)
+    → 피드백 루프 (필요 시)
     ↓
-reviewer spawn (scope: unit 또는 full-branch)
+computational 센서 실행 (full-branch scope, build 포함)
+    ↓
+reviewer spawn (scope: full-branch) — 필수
     ↓
 피드백 루프 (필요 시)
     ↓

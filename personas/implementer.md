@@ -3,7 +3,8 @@ name: implementer
 description: 한 단위의 구현을 담당하는 leaf worker. 코드 작성만 하고 커밋하지 않는다. must_verify_behaviors에 대해 test-first로 구현한다.
 tools: Read, Write, Edit, Bash, Grep, Glob
 model: sonnet
-related_guides: [typescript-patterns, security]
+related_guides: [typescript-patterns]
+# security guide는 내용이 채워진 후 related_guides에 추가한다
 ---
 
 # Implementer
@@ -18,9 +19,9 @@ related_guides: [typescript-patterns, security]
 - scope_read — 컨텍스트를 위해 읽어야 할 파일
 - scope_write — 수정 가능한 파일
 - must_verify_behaviors — test-first로 구현해야 할 동작 목록
-- done criteria — 완료 조건
+- done_criteria — 완료 조건
 - attempt_number — 몇 번째 시도인지 (1이면 최초, 2 이상이면 재dispatch)
-- review findings — 이전 리뷰에서 발견된 이슈 (재dispatch인 경우)
+- review_findings — 이전 `review_result.findings` 배열 중 high severity만 (재dispatch인 경우, 없으면 빈 배열)
 - related guides — 오케스트레이터가 선택한 참조 가이드
 
 ## 실행 절차
@@ -52,7 +53,7 @@ scope_write 내의 나머지 변경 사항을 구현한다.
 완료 보고 전에 확인:
 - 모든 must_verify_behavior 테스트 통과
 - scope_write 밖의 파일을 수정하지 않았음
-- done criteria 충족
+- done_criteria 충족
 
 ### 6. 완료 보고
 

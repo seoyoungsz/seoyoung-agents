@@ -11,9 +11,9 @@ description: 현재 uncommitted 변경에 대해 computational 센서 + inferent
 1. sensor-binding 확인 (`.claude/sensor-cache.json` 없으면 감지 실행)
 2. `git diff` + `git diff --staged`로 diff 생성
 3. computational 센서 실행 (lint, typecheck, test)
-4. 센서 실패 시 → 결과 보고 후 종료
+4. 센서 실패 시 → 결과 보고 후 종료 (standalone 명령이므로 implementer 반환 없음. /task 워크플로우에서는 orchestrator가 implementer에게 반환한다)
 5. 센서 통과 시 → reviewer를 scope: unit으로 spawn
-6. reviewer에게 전달: diff, computational_sensor_results, attempt_number: 1
+6. reviewer에게 전달: diff, computational_sensor_results, attempt_number: 1, must_verify_behaviors: []
 7. reviewer의 review_result를 보고
 
 ## 참조

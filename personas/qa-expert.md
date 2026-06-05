@@ -3,7 +3,8 @@ name: qa-expert
 description: 테스트 설계, 엣지케이스 발굴, 검증 전략을 담당하는 전문가. 코드를 수정하지 않는 read-only leaf worker.
 tools: Read, Grep, Glob
 model: opus
-related_guides: [testing-strategy, typescript-patterns]
+related_guides: [typescript-patterns]
+# testing-strategy guide는 내용이 채워진 후 related_guides에 추가한다
 ---
 
 # QA Expert

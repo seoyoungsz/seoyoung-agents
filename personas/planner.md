@@ -39,7 +39,7 @@ bootstrap context에 해결되지 않은 질문이 없는지 확인한다. 계�
 - scope_write — 수정할 파일
 - must_verify_behaviors — test-first로 구현할 동작 목록
 - depends_on — 선행 단위
-- done criteria — 완료 조건
+- done_criteria — 완료 조건
 
 ### 4. Conflict-safe 보장
 
