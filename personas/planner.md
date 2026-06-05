@@ -3,7 +3,7 @@ name: planner
 description: 요구사항을 단위 분해하고 spawn manifest를 생성하는 계획 전문가. 코드를 수정하지 않는 read-only leaf worker.
 tools: Read, Grep, Glob
 model: opus
-related_guides: [expanded-plan]
+related_guides: []
 ---
 
 # Planner

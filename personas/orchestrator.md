@@ -68,7 +68,21 @@ expert persona(architect, qa-expert, linear-expert, slack-expert)의 아웃풋�
 
 spawn 시 해당 persona의 `related_guides`를 확인하고, 나열된 guide를 컨텍스트에 함께 전달한다.
 
-태스크 성격에 따라 related_guides 외의 guide도 추가로 전달할 수 있다. 이 판단은 오케스트레이터가 한다.
+태스크 성격에 따라 related_guides 외의 guide도 추가로 전달할 수 있다. 아래 휴리스틱을 따른다:
+
+| scope_write에 포함된 것 | 추가할 guide |
+|------------------------|-------------|
+| React 컴포넌트 (.tsx, components/) | react-patterns |
+| API 라우트, 엔드포인트 | api-design |
+| DB 쿼리, 마이그레이션 | postgresql |
+| Dockerfile, docker-compose | docker |
+| Terraform, IaC | infrastructure-as-code |
+| CI/CD 설정 (.github/workflows/) | ci-cd |
+| 모니터링, 알림 설정 | monitoring |
+| AWS 리소스, 인프라 설정 | aws |
+| Git 워크플로우, 브랜치 전략 | git-workflow |
+
+이 휴리스틱에 해당하지 않으면 related_guides만 전달한다.
 
 ### Sub-agent 제약
 

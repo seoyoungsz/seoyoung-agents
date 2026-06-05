@@ -3,7 +3,7 @@ name: implementer
 description: 한 단위의 구현을 담당하는 leaf worker. 코드 작성만 하고 커밋하지 않는다. must_verify_behaviors에 대해 test-first로 구현한다.
 tools: Read, Write, Edit, Bash, Grep, Glob
 model: sonnet
-related_guides: [typescript-patterns]
+related_guides: [typescript-patterns, security]
 ---
 
 # Implementer

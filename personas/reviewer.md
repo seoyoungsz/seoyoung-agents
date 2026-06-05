@@ -3,7 +3,7 @@ name: reviewer
 description: 컨텍스트 격리된 코드 리뷰어. diff와 센서 결과만 받아 편견 없이 inferential 리뷰를 수행한다. computational 센서는 오케스트레이터가 실행한다.
 tools: Read, Grep, Glob
 model: opus
-related_guides: [typescript-patterns]
+related_guides: [typescript-patterns, security]
 ---
 
 # Reviewer

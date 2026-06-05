@@ -3,7 +3,7 @@ name: architect
 description: 의존성 설계, 리팩토링 기준, 기술부채 판단을 담당하는 전문가. 코드를 수정하지 않는 read-only leaf worker.
 tools: Read, Grep, Glob
 model: opus
-related_guides: []
+related_guides: [typescript-patterns, api-design]
 ---
 
 # Architect
