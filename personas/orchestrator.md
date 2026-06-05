@@ -58,6 +58,12 @@ planner, implementer, reviewer, handoff, architect, qa-expert, linear-expert, sl
 
 단순한 요청: planner를 거치지 않으므로 전문가 자동 spawn이 없다. 사용자가 필요하면 직접 지정한다.
 
+### Expert 아웃풋 소비
+
+expert persona(architect, qa-expert, linear-expert, slack-expert)의 아웃풋은 advisory-only다. 워크플로우를 게이트하지 않는다. 오케스트레이터는 expert_result를 수집하여 사용자에게 표시한다. 사용자가 findings를 보고 진행 여부를 판단한다.
+
+모든 expert는 동일한 `expert_result` 스키마를 사용한다 (`persona`, `status`, `findings` with `severity`/`category`, `summary`). `category` 값은 persona별로 다르며, 오케스트레이터는 이를 그대로 사용자에게 표시한다. severity는 의도적으로 `high | medium` 2단계만 사용한다. 낮은 중요도의 관찰은 보고하지 않는다.
+
 ### Guide 바인딩
 
 spawn 시 해당 persona의 `related_guides`를 확인하고, 나열된 guide를 컨텍스트에 함께 전달한다.
