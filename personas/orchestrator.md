@@ -142,7 +142,7 @@ worktree 격리는 사용하지 않는다. 비용이 높고, 충돌을 뒤로 �
     ↓
 sensor-binding 확인 (캐시 있으면 skip)
     ↓
-deep-interview (요구사항 명확화, 필요 시)
+deep-interview (아래 조건 중 하나라도 해당하면 실행)
     ↓
 planner spawn (단위 분해 + spawn manifest + 전문가 포함)
     ↓
@@ -182,6 +182,19 @@ reviewer spawn (scope: unit)
 ```
 
 단순한 요청에서는 planner, handoff를 거치지 않는다. 전문가가 필요하면 사용자가 직접 지정한다. 완료 시 오케스트레이터가 변경 사항과 검증 결과를 인라인으로 요약한다.
+
+### Deep-interview 트리거 조건
+
+복잡한 요청에서 아래 중 하나라도 해당하면 planner 전에 deep-interview guide를 로드하여 인터뷰를 수행한다:
+
+- 목표가 명시되지 않았거나 여러 해석이 가능
+- 범위(포함/제외)가 불분명
+- 완료 기준이 없거나 모호
+- 사용자의 요청이 한 문장 이하로 짧고 맥락이 부족
+
+요구사항이 이미 명확하면 (목표, 범위, 제약, 완료 기준이 모두 식별 가능) 건너뛴다.
+
+interview_result는 bootstrap context의 일부다. 오케스트레이터가 영향받는 패키지/디렉토리 목록과 sensor-binding 결과를 추가하여 완전한 bootstrap context를 구성한 후 planner에게 전달한다.
 
 ## Spawn Manifest 검증
 
