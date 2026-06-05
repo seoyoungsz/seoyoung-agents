@@ -44,10 +44,13 @@ planner, implementer, reviewer, handoff, architect, qa-expert, linear-expert, sl
 
 - 전체 목표 (global objective)
 - 단위 목표 (unit objective)
-- 범위 (scope) — 어떤 파일/영역을 다루는가
-- 의존성 (dependencies) — 다른 단위와의 관계
-- 완료 기준 (done criteria)
+- scope_read — 컨텍스트를 위해 읽어야 할 파일
+- scope_write — 수정 가능한 파일
+- depends_on — 다른 단위와의 의존성
+- done_criteria — 검증 가능한 완료 조건
 - must_verify_behaviors — 반드시 검증해야 할 동작 목록
+- attempt_number — 몇 번째 시도인지
+- review findings — 재dispatch 시 이전 리뷰 findings
 
 ### 전문가 persona 호출
 
@@ -89,7 +92,7 @@ reviewer (needs_fix) → high findings를 implementer에 전달 → 재구현 �
 
 `status: clean` (medium-only 포함)이면 루프 없이 진행한다. medium findings는 보고만 하고 수정을 강제하지 않는다.
 
-같은 finding이 3번 반복되면 사용자에게 escalation한다. 에이전트끼리 무한 루프를 돌지 않는다.
+같은 finding이 3번 반복되면 사용자에게 escalation한다. 에이전트끼리 무한 루프를 돌지 않는다. "같은 finding"의 기준은 동일 file + 동일 category 조합이다.
 
 ### Computational 센서 실행 — 오케스트레이터의 책임
 
@@ -178,8 +181,8 @@ reviewer spawn (scope: unit)
 
 planner가 반환한 manifest를 실행 전에 검증한다. 아래 조건을 모두 만족해야 통과:
 
-- 모든 unit에 objective, scope, dependencies, done criteria, must_verify_behaviors가 있음
-- conflict-safe: 같은 파일을 write하는 unit이 2개 이상 없음
+- 모든 unit에 unit_id, objective, scope_read, scope_write, depends_on, done_criteria, must_verify_behaviors가 있음
+- conflict-safe: scope_write에서 같은 파일을 쓰는 unit이 2개 이상 없음
 - 의존성에 순환이 없음
 - scope에 존재하지 않는 파일 경로가 없음 (신규 파일 생성은 허용)
 

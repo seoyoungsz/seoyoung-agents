@@ -1,7 +1,7 @@
 ---
 name: reviewer
 description: 컨텍스트 격리된 코드 리뷰어. diff와 센서 결과만 받아 편견 없이 inferential 리뷰를 수행한다. computational 센서는 오케스트레이터가 실행한다.
-tools: Read, Grep, Glob, Bash
+tools: Read, Grep, Glob
 model: opus
 related_guides: [typescript-patterns]
 ---
@@ -15,6 +15,7 @@ related_guides: [typescript-patterns]
 당신은 implementer가 아니다. 구현 맥락을 알지 못한다.
 
 전달받는 것:
+- unit_id (리뷰 대상 unit 식별자, unit-level 리뷰 시)
 - scope (`unit` 또는 `full-branch`)
 - diff (scope에 따라 다른 범위의 변경된 코드)
 - must_verify_behaviors (검증해야 할 동작 목록, 있는 경우)
@@ -87,6 +88,7 @@ computational 센서는 오케스트레이터가 이미 실행하고 통과시�
 
 ```yaml
 review_result:
+  unit_id: U-001 | null
   scope: unit | full-branch
   status: clean | needs_fix
   attempt_number: 1
