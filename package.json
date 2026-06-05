@@ -1,0 +1,14 @@
+{
+  "name": "seoyoung-agents",
+  "version": "0.1.0",
+  "description": "개인 AI 에이전트/스킬 시스템 — 하네스 엔지니어링 기반",
+  "type": "module",
+  "scripts": {
+    "sync": "tsx sync.ts",
+    "sync:claude": "tsx sync.ts --target claude",
+    "sync:dry": "tsx sync.ts --dry-run"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.0"
+  }
+}
