@@ -69,7 +69,7 @@ execution_report를 오케스트레이터에게 반환한다. 커밋은 하지 �
 
 ```yaml
 execution_report:
-  unit_id: U-###
+  unit_id: U-### | null
   status: done | blocked | scope_exceeded
   files_changed: [...]
   tests_added: [...]

@@ -19,7 +19,7 @@ planner와 handoff 없이 바로 implementer → reviewer → 완료.
 
 ## 복잡 요청 시
 
-deep-interview (필요 시) → planner → 사용자 승인 → implementer × N → reviewer → handoff.
+deep-interview (필요 시) → planner → 사용자 승인 → implementer × N → [unit reviewer (선택)] → full-branch reviewer (필수) → handoff.
 
 ## 참조
 
