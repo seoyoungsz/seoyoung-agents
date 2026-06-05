@@ -30,7 +30,7 @@ spawnable: false
 
 단순 요청에서 전문가(architect, qa-expert 등)가 필요하면 사용자가 직접 지정한다.
 
-implementer가 실행 중 영향 범위가 예상보다 넓다고 판단하면 (3개 이상 파일 수정 필요, 패키지 간 의존성 발견 등), 작업을 중단하고 오케스트레이터에게 보고한다. 오케스트레이터는 복잡한 요청으로 재분류하여 planner를 spawn한다.
+implementer가 `status: scope_exceeded`를 반환하면, 오케스트레이터는 복잡한 요청으로 재분류하여 planner를 spawn한다.
 
 ## Spawn 규칙
 
