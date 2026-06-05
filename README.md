@@ -1,0 +1,167 @@
+# seoyoung-agents
+
+어디서 일하든 들고 다니는 개인 AI 에이전트/스킬 시스템.
+하네스 엔지니어링(harness engineering) 관점으로 설계한 "A 구조 — 개인용".
+
+## 설계 철학
+
+에이전트에서 모델 자체를 제외한 모든 것(시스템 프롬프트, 도구, 컨텍스트 관리, 검증 루프)을 **하네스**라고 부른다.
+
+| 구분 | 시점 | 역할 | 예시 |
+|---|---|---|---|
+| **Guide** (feedforward) | 행동 전 | 좋은 결과를 내도록 유도 | guides/, personas/ |
+| **Sensor** (feedback) | 행동 후 | 자가수정하도록 신호 제공 | lint, test, reviewer |
+
+**A 구조**: computational 센서(린터/타입체크/테스트)는 소유하지 않고, 회사 레포의 기존 것을 **바인딩**해서 쓴다. 그래서 회사를 옮겨도 그대로 동작한다.
+
+## 디렉토리 구조
+
+```
+seoyoung-agents/
+├── personas/           # 에이전트 — "누가" 보는가
+│   ├── orchestrator    # 분배/조율 (메인 에이전트가 맡음, spawn 안 됨)
+│   ├── planner         # 단위 분해 + spawn manifest
+│   ├── implementer     # 구현 전담 leaf worker
+│   ├── reviewer        # 컨텍스트 격리 리뷰
+│   ├── handoff         # 최종 전달 요약
+│   ├── architect       # 설계/의존성/기술부채
+│   ├── qa-expert       # 테스트 설계/엣지케이스
+│   ├── linear-expert   # 티켓/Epic 구조 검토
+│   └── slack-expert    # 커뮤니케이션 구조 검토
+│
+├── guides/             # 스킬 — "어떻게" 하는가
+│   ├── deep-interview  # 요구사항 명확화 (소크라테스식)
+│   ├── typescript-patterns  # TS 코드 패턴/안티패턴
+│   ├── react-patterns       # (틀)
+│   ├── api-design           # (틀)
+│   ├── security             # (틀)
+│   ├── testing-strategy     # (틀)
+│   ├── ci-cd                # (틀)
+│   ├── infrastructure-as-code # (틀)
+│   ├── git-workflow         # (틀)
+│   ├── docker               # (틀)
+│   ├── postgresql           # (틀)
+│   ├── aws                  # (틀)
+│   ├── monitoring           # (틀)
+│   └── agents-template      # (틀) 회사별 AGENTS.md 템플릿
+│
+├── adapters/           # 회사 도구 연결
+│   └── sensor-binding  # 프로젝트 센서 자동 감지 규칙
+│
+├── commands/           # 슬래시 커맨드
+│   ├── review          # /review — unit scope 리뷰
+│   ├── review-branch   # /review-branch — full-branch 리뷰
+│   └── task            # /task — 전체 오케스트레이션 워크플로우
+│
+├── sync.ts             # 배포 스크립트
+└── package.json
+```
+
+## Guide vs Persona
+
+| | guides/ | personas/ |
+|---|---|---|
+| 역할 | 스킬 (지식) | 에이전트 (시각) |
+| 질문 | **어떻게** 하는가 | **누가** 보는가 |
+| 로드 방식 | 컨텍스트에 읽어들임 | sub-agent로 spawn |
+| 바인딩 | persona의 `related_guides` + orchestrator 동적 판단 | orchestrator가 spawn |
+
+## 워크플로우
+
+### /task — 전체 오케스트레이션
+
+```
+요청 접수
+    ↓
+sensor-binding 확인
+    ↓
+요청 분류 (단순 / 복잡)
+    ↓
+[복잡] deep-interview → planner → 사용자 승인
+       → implementer × N → [unit reviewer] → full-branch reviewer → handoff
+[단순] implementer → reviewer → 완료
+```
+
+### /review — 현재 변경 리뷰
+
+```
+sensor-binding 확인 → diff 생성 → computational 센서 → reviewer (unit scope)
+```
+
+### /review-branch — 브랜치 전체 리뷰
+
+```
+sensor-binding 확인 → base branch diff → computational 센서 (+ build) → reviewer (full-branch)
+```
+
+## 리뷰 루프
+
+```
+implementer 구현
+    ↓
+orchestrator가 computational 센서 실행 (lint, typecheck, test)
+    ↓  실패 → implementer에게 반환
+    ↓  통과
+reviewer spawn (컨텍스트 격리)
+    ↓
+status: needs_fix → high findings를 implementer에게 전달 → 재구현 → 재리뷰
+status: clean → 진행
+    ↓
+같은 finding이 3번 반복 → 사용자에게 escalation
+```
+
+## 센서 바인딩
+
+프로젝트 진입 시 `package.json`, `pyproject.toml`, `go.mod` 등을 읽어 lint/typecheck/test/build 명령을 자동 감지한다. 감지 결과는 `.claude/sensor-cache.json`에 캐싱된다.
+
+```json
+{
+  "sensors": {
+    "lint": { "command": "pnpm lint" },
+    "typecheck": { "command": "pnpm typecheck" },
+    "test": { "command": "pnpm test" },
+    "build": { "command": "pnpm build" }
+  },
+  "base_branch": "dev"
+}
+```
+
+## 배포
+
+```bash
+# 설치
+npm install
+
+# 전체 배포
+npm run sync
+
+# dry-run (변경 없이 확인만)
+npm run sync:dry
+
+# Claude Code만
+npm run sync:claude
+```
+
+배포 경로:
+
+| 소스 | 대상 |
+|------|------|
+| `personas/` | `~/.claude/agents/` |
+| `guides/` | `~/.claude/skills/seoyoung/` |
+| `commands/` | `~/.claude/commands/` |
+| `adapters/` | `~/.claude/skills/seoyoung/adapters/` |
+
+## 틀(skeleton) guides 채우기
+
+`(틀)` 표시된 guides는 섹션 구조만 잡혀 있다. 실제 프로젝트에서 작업하면서 내용을 채운다:
+
+1. guide 파일을 열고 TODO 섹션에 내용 작성
+2. 내용이 채워지면 관련 persona의 `related_guides`에 추가
+3. `npm run sync`로 배포
+
+## 참고
+
+- [Harness engineering for coding agent users — Martin Fowler](https://martinfowler.com/articles/harness-engineering.html)
+- [The Anatomy of an Agent Harness — LangChain](https://blog.langchain.com/the-anatomy-of-an-agent-harness/)
+- [Effective harnesses for long-running agents — Anthropic](https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents)
+- [devbrother2024/skills](https://github.com/devbrother2024/skills) — deep-interview 패턴
