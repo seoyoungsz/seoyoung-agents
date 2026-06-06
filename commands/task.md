@@ -21,6 +21,10 @@ planner와 handoff 없이 바로 implementer → reviewer → 완료.
 
 deep-interview (필요 시) → planner → 사용자 승인 → implementer × N → [unit reviewer (선택)] → full-branch reviewer (필수) → handoff.
 
+## plan만 먼저 보고 싶다면
+
+`/plan`을 사용한다. plan만 생성하고 구현은 하지 않는다. plan이 마음에 들면 그 후 `/task`로 실행할 수 있다.
+
 ## 참조
 
 - `personas/orchestrator.md` — 전체 분배 흐름, 리뷰 정책, 핸드오프 기준

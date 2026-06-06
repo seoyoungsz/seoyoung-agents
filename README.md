@@ -1,16 +1,16 @@
 # seoyoung-agents
 
 어디서 일하든 들고 다니는 개인 AI 에이전트/스킬 시스템.
-하네스 엔지니어링(harness engineering) 관점으로 설계한 "A 구조 — 개인용".
+하네스 엔지니어링(harness engineering) 관점으로 설계한 "A 구조 - 개인용".
 
 ## 설계 철학
 
 에이전트에서 모델 자체를 제외한 모든 것(시스템 프롬프트, 도구, 컨텍스트 관리, 검증 루프)을 **하네스**라고 부른다.
 
-| 구분 | 시점 | 역할 | 예시 |
-|---|---|---|---|
-| **Guide** (feedforward) | 행동 전 | 좋은 결과를 내도록 유도 | guides/, personas/ |
-| **Sensor** (feedback) | 행동 후 | 자가수정하도록 신호 제공 | lint, test, reviewer |
+| 구분                    | 시점    | 역할                     | 예시                 |
+| ----------------------- | ------- | ------------------------ | -------------------- |
+| **Guide** (feedforward) | 행동 전 | 좋은 결과를 내도록 유도  | guides/, personas/   |
+| **Sensor** (feedback)   | 행동 후 | 자가수정하도록 신호 제공 | lint, test, reviewer |
 
 **A 구조**: computational 센서(린터/타입체크/테스트)는 소유하지 않고, 회사 레포의 기존 것을 **바인딩**해서 쓴다. 그래서 회사를 옮겨도 그대로 동작한다.
 
@@ -49,9 +49,10 @@ seoyoung-agents/
 │   └── sensor-binding  # 프로젝트 센서 자동 감지 규칙
 │
 ├── commands/           # 슬래시 커맨드
+│   ├── plan            # /plan — plan만 생성 (구현 안 함)
+│   ├── task            # /task — 전체 오케스트레이션 워크플로우
 │   ├── review          # /review — unit scope 리뷰
-│   ├── review-branch   # /review-branch — full-branch 리뷰
-│   └── task            # /task — 전체 오케스트레이션 워크플로우
+│   └── review-branch   # /review-branch — full-branch 리뷰
 │
 ├── sync.ts             # 배포 스크립트
 └── package.json
@@ -59,14 +60,22 @@ seoyoung-agents/
 
 ## Guide vs Persona
 
-| | guides/ | personas/ |
-|---|---|---|
-| 역할 | 스킬 (지식) | 에이전트 (시각) |
-| 질문 | **어떻게** 하는가 | **누가** 보는가 |
-| 로드 방식 | 컨텍스트에 읽어들임 | sub-agent로 spawn |
-| 바인딩 | persona의 `related_guides` + orchestrator 동적 판단 | orchestrator가 spawn |
+|           | guides/                                             | personas/            |
+| --------- | --------------------------------------------------- | -------------------- |
+| 역할      | 스킬 (지식)                                         | 에이전트 (시각)      |
+| 질문      | **어떻게** 하는가                                   | **누가** 보는가      |
+| 로드 방식 | 컨텍스트에 읽어들임                                 | sub-agent로 spawn    |
+| 바인딩    | persona의 `related_guides` + orchestrator 동적 판단 | orchestrator가 spawn |
 
 ## 워크플로우
+
+### /plan — 계획만 생성
+
+```
+요청 접수 → deep-interview (모호하면) → planner → plan 제시 → 끝
+```
+
+plan만 뽑고 구현은 하지 않는다. plan이 마음에 들면 `/task`로 실행한다.
 
 ### /task — 전체 오케스트레이션
 
@@ -144,11 +153,11 @@ npm run sync:claude
 
 배포 경로:
 
-| 소스 | 대상 |
-|------|------|
-| `personas/` | `~/.claude/agents/` |
-| `guides/` | `~/.claude/skills/seoyoung/` |
-| `commands/` | `~/.claude/commands/` |
+| 소스        | 대상                                  |
+| ----------- | ------------------------------------- |
+| `personas/` | `~/.claude/agents/`                   |
+| `guides/`   | `~/.claude/skills/seoyoung/`          |
+| `commands/` | `~/.claude/commands/`                 |
 | `adapters/` | `~/.claude/skills/seoyoung/adapters/` |
 
 ## 틀(skeleton) guides 채우기
