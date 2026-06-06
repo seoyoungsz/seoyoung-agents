@@ -19,3 +19,9 @@
 - `/commit` — 컨벤션에 맞춰 커밋
 - `/e2e` — E2E 테스트 실행 + 결과 요약
 - `/cross-review` — 에이전트 간 교차 리뷰 (Claude↔Codex)
+
+## Hook 스크립트
+
+- `scripts/guard.py` — 위험 명령 차단 (PreToolUse)
+- `scripts/verify.py` — 코드 변경 시 자동 검증 (Stop)
+- 활성화: `~/.claude/settings.json`에 수동 등록 (README 참조)

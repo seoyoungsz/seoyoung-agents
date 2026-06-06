@@ -14,6 +14,7 @@ interface TargetDirs {
   skills?: string
   commands?: string
   adapters?: string
+  scripts?: string
 }
 
 interface TargetConfig {
@@ -29,6 +30,7 @@ const TARGETS: Record<string, TargetConfig> = {
       skills: join(HOME, ".claude", "skills", "seoyoung"),
       commands: join(HOME, ".claude", "commands"),
       adapters: join(HOME, ".claude", "skills", "seoyoung", "adapters"),
+      scripts: join(HOME, ".claude", "scripts"),
     },
     backupDir: join(HOME, ".claude", "backup"),
     format: "md",
@@ -298,6 +300,55 @@ async function syncConvertedDir(
   return result
 }
 
+async function syncPyDir(
+  srcDir: string,
+  destDir: string,
+  label: string
+): Promise<SyncResult> {
+  const result: SyncResult = { copied: [], skipped: [], removed: [] }
+
+  const srcFiles = await listFiles(srcDir, ".py")
+  if (srcFiles.length === 0) {
+    console.log(`  ${label}: no files to sync`)
+    return result
+  }
+
+  if (!dryRun) {
+    await mkdir(destDir, { recursive: true })
+  }
+
+  for (const file of srcFiles) {
+    const src = join(srcDir, file)
+    const dest = join(destDir, file)
+
+    if (existsSync(dest)) {
+      const srcContent = await readFile(src, "utf-8")
+      const destContent = await readFile(dest, "utf-8")
+      if (srcContent === destContent) {
+        result.skipped.push(file)
+        continue
+      }
+    }
+
+    if (dryRun) {
+      console.log(`  [dry-run] would copy: ${file} → ${destDir}/`)
+    } else {
+      await copyFile(src, dest)
+    }
+    result.copied.push(file)
+  }
+
+  const destFiles = await listFiles(destDir, ".py")
+  const srcSet = new Set(srcFiles)
+  for (const file of destFiles) {
+    if (!srcSet.has(file)) {
+      result.removed.push(file)
+    }
+  }
+
+  return result
+}
+
 function printResult(label: string, result: SyncResult) {
   const { copied, skipped, removed } = result
   if (copied.length > 0) {
@@ -348,9 +399,11 @@ async function backupTarget(target: Target, stamp: string) {
   if (config.dirs.skills) dirs.push({ dir: config.dirs.skills, label: "skills" })
   if (config.dirs.commands) dirs.push({ dir: config.dirs.commands, label: "commands" })
   if (config.dirs.adapters) dirs.push({ dir: config.dirs.adapters, label: "adapters" })
+  if (config.dirs.scripts) dirs.push({ dir: config.dirs.scripts, label: "scripts" })
 
   for (const { dir, label } of dirs) {
-    const count = await backupDir(dir, join(backupBase, label), ext)
+    const fileExt = label === "scripts" ? ".py" : ext
+    const count = await backupDir(dir, join(backupBase, label), fileExt)
     if (count > 0) {
       console.log(`  ${label}: ${count} files backed up`)
     }
@@ -405,6 +458,15 @@ async function syncTarget(target: Target) {
       "adapters → adapters"
     )
     printResult("adapters → adapters", adaptersResult)
+  }
+
+  if (config.dirs.scripts) {
+    const scriptsResult = await syncPyDir(
+      join(SRC, "scripts"),
+      config.dirs.scripts,
+      "scripts → scripts"
+    )
+    printResult("scripts → scripts", scriptsResult)
   }
 }
 

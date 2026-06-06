@@ -58,6 +58,10 @@ seoyoung-agents/
 │   ├── e2e             # /e2e — E2E 테스트 실행 + 결과 요약
 │   └── cross-review    # /cross-review — 에이전트 간 교차 리뷰
 │
+├── scripts/            # hook 스크립트
+│   ├── guard.py        # PreToolUse — 위험 명령어 차단
+│   └── verify.py       # Stop — 코드 변경 시 자동 검증
+│
 ├── sync.ts             # 배포 스크립트
 └── package.json
 ```
@@ -181,6 +185,7 @@ npm run sync:codex
 | `guides/` | `~/.claude/skills/seoyoung/` | .md (복사) |
 | `commands/` | `~/.claude/commands/` | .md (복사) |
 | `adapters/` | `~/.claude/skills/seoyoung/adapters/` | .md (복사) |
+| `scripts/` | `~/.claude/scripts/` | .py (복사) |
 
 ### Codex
 
@@ -206,6 +211,38 @@ codex_effort: low   # 기본 medium 대신 low 사용
 ```
 
 `spawnable: false`인 persona(orchestrator)는 Codex에 배포하지 않는다.
+
+## Hook 스크립트
+
+`scripts/`의 hook 스크립트는 `~/.claude/scripts/`에 배포된다. 활성화하려면 `~/.claude/settings.json`에 수동으로 hook을 등록해야 한다:
+
+```json
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash|PowerShell",
+        "hooks": [{ "type": "command", "command": "python3 ~/.claude/scripts/guard.py" }]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [{ "type": "command", "command": "python3 ~/.claude/scripts/verify.py" }]
+      }
+    ]
+  }
+}
+```
+
+| 스크립트 | hook | 역할 |
+|---------|------|------|
+| `guard.py` | PreToolUse | rm -rf, git push --force 등 위험 명령 차단 |
+| `verify.py` | Stop | 코드 변경 있을 때 lint/test 자동 실행 (sensor-cache 사용, 없으면 자체 감지) |
+
+`verify.py`는 `git status --porcelain`으로 변경 여부를 확인하고, 변경 없으면 skip한다. `SEOYOUNG_NO_VERIFY=1`로 일시 비활성화 가능.
+
+settings.json은 sync가 자동 배포하지 않는다 — 기존 permissions/env/hook 설정을 보호하기 위해 수동 등록.
 
 ## Orphan 파일 관리
 
