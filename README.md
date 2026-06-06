@@ -217,9 +217,34 @@ rm ~/.claude/agents/old-agent.md
 2. 내용이 채워지면 관련 persona의 `related_guides`에 추가
 3. `npm run sync`로 배포
 
+## 새 프로젝트에서 AGENTS.md 세팅
+
+### 프로젝트에 CLAUDE.md/AGENTS.md가 이미 있을 때
+
+seoyoung-agents는 global 레이어(`~/.claude/`)에 배포되므로, 프로젝트의 CLAUDE.md와 자동으로 공존한다. 프로젝트 규칙이 global 규칙보다 우선한다.
+
+`guides/agents-template.md`의 충돌 체크리스트로 확인할 것:
+- 커밋 컨벤션이 다른가?
+- 테스트 전략이 다른가?
+- 자체 /review command가 있는가?
+
+### 프로젝트에 CLAUDE.md/AGENTS.md가 없을 때
+
+`guides/agents-template.md`의 템플릿을 기반으로 프로젝트 루트에 AGENTS.md를 생성한다.
+
+### Cross-agent 호환성
+
+| 파일 | 역할 | 적용 대상 |
+|------|------|----------|
+| `AGENTS.md` | canonical 규칙 (프로젝트 레벨) | Claude Code가 읽음 |
+| `CLAUDE.md` | Claude Code 전용 companion | AGENTS.md 참조 + sync 명령/커맨드 목록 |
+
+Codex는 AGENTS.md를 직접 읽지 않는다. Codex 에이전트가 따를 규칙은 persona `.md` 파일의 본문에 내장되어 있고, sync.ts가 `developer_instructions`로 변환하여 `.toml`에 포함시킨다.
+
 ## 참고
 
 - [Harness engineering for coding agent users — Martin Fowler](https://martinfowler.com/articles/harness-engineering.html)
 - [The Anatomy of an Agent Harness — LangChain](https://blog.langchain.com/the-anatomy-of-an-agent-harness/)
 - [Effective harnesses for long-running agents — Anthropic](https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents)
 - [devbrother2024/skills](https://github.com/devbrother2024/skills) — deep-interview 패턴
+- [multica-ai/andrej-karpathy-skills](https://github.com/multica-ai/andrej-karpathy-skills) — Karpathy 4원칙 (Think Before Coding, Simplicity First, Surgical Changes, Goal-Driven Execution)
