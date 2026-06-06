@@ -217,6 +217,23 @@ rm ~/.claude/agents/old-agent.md
 2. 내용이 채워지면 관련 persona의 `related_guides`에 추가
 3. `npm run sync`로 배포
 
+## 프로젝트별 guide 오버라이드
+
+global guides는 범용 원칙만 담고 있다. 프로젝트에 맞는 내용이 필요하면 프로젝트 `.claude/skills/`에 같은 이름의 guide를 넣으면 자동으로 오버라이드된다.
+
+```
+~/.claude/skills/seoyoung/react-patterns.md     ← global (범용 원칙)
+프로젝트/.claude/skills/react-patterns.md        ← 프로젝트 레벨 (자동 오버라이드)
+```
+
+별도 command 없이 자연어로 요청하면 된다:
+
+```
+"react-patterns guide를 이 프로젝트에 맞게 커스터마이즈해줘"
+```
+
+Claude가 global guide를 읽고 → 프로젝트 코드베이스를 분석하고 → `.claude/skills/react-patterns.md`를 생성한다.
+
 ## 새 프로젝트에서 AGENTS.md 세팅
 
 ### 프로젝트에 CLAUDE.md/AGENTS.md가 이미 있을 때
