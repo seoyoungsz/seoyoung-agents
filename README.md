@@ -52,7 +52,8 @@ seoyoung-agents/
 │   ├── plan            # /plan — plan만 생성 (구현 안 함)
 │   ├── task            # /task — 전체 오케스트레이션 워크플로우
 │   ├── review          # /review — unit scope 리뷰
-│   └── review-branch   # /review-branch — full-branch 리뷰
+│   ├── review-branch   # /review-branch — full-branch 리뷰
+│   └── commit          # /commit — 컨벤션에 맞춰 커밋 생성
 │
 ├── sync.ts             # 배포 스크립트
 └── package.json
