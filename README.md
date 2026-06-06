@@ -80,10 +80,16 @@ seoyoung-agents/
 ### /plan — 계획만 생성
 
 ```
-요청 접수 → deep-interview (모호하면) → planner → plan 제시 → 끝
+기존 plan 탐색 (.claude/docs/)
+    ↓
+요청 접수 → deep-interview (모호하면) → planner → plan 제시
+    ↓
+.claude/docs/{slug}.md에 저장 (status: draft)
+    ↓
+사용자 승인 → status: approved로 업데이트 → 끝
 ```
 
-plan만 뽑고 구현은 하지 않는다. plan이 마음에 들면 `/task`로 실행한다.
+plan만 뽑고 구현은 하지 않는다. plan이 마음에 들면 `/task`로 실행한다 — 저장된 plan을 자동 로드하여 planner spawn 없이 바로 실행한다.
 
 ### /task — 전체 오케스트레이션
 
@@ -92,11 +98,15 @@ plan만 뽑고 구현은 하지 않는다. plan이 마음에 들면 `/task`로 �
     ↓
 sensor-binding 확인
     ↓
+저장된 plan 탐색 (.claude/docs/ → approved/draft 제안)
+    ↓
 요청 분류 (단순 / 복잡)
     ↓
-[복잡] deep-interview → planner → 사용자 승인
-       → implementer × N → [unit reviewer] → full-branch reviewer → handoff
-[단순] implementer → reviewer → 완료
+[복잡 + 저장된 plan] plan 로드 → planner skip → implementer × N
+                     → [unit reviewer] → full-branch reviewer → handoff
+[복잡 + plan 없음]   deep-interview → planner → plan 저장 → 사용자 승인
+                     → implementer × N → [unit reviewer] → full-branch reviewer → handoff
+[단순]               implementer → reviewer → 완료
 ```
 
 ### /review — 현재 변경 리뷰
@@ -151,6 +161,30 @@ status: clean → 진행
   "base_branch": "dev"
 }
 ```
+
+## Plan 저장
+
+`/plan`으로 생성한 계획은 프로젝트별 `.claude/docs/{slug}.md`에 저장된다. 세션이 끊겨도 다음 세션에서 이어서 작업할 수 있다.
+
+```markdown
+---
+slug: auth-middleware-refactor
+status: draft          # draft → approved (승인 시)
+objective: "인증 미들웨어 리팩토링"
+created_at: 2026-06-06
+updated_at: 2026-06-06
+---
+
+plan:
+  slug: "auth-middleware-refactor"
+  status: ready
+  ...
+```
+
+- **draft**: planner가 생성, 사용자 미승인 상태
+- **approved**: 사용자 승인, `/task`에서 바로 실행 가능
+- 같은 slug로 덮어쓰기 — git이 이력 추적
+- `.claude/docs/`는 git 추적 대상 (`.gitignore`에 넣지 않음)
 
 ## 배포
 

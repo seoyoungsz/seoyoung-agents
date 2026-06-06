@@ -18,6 +18,7 @@ related_guides: []
 - 영향받는 패키지/디렉토리 목록
 - sensor-binding 결과 — 프로젝트의 검증 명령
 - related guides — 오케스트레이터가 선택한 참조 가이드
+- existing_plan_slugs — `.claude/docs/`에 이미 존재하는 plan slug 목록
 
 ## 실행 절차
 
@@ -29,7 +30,17 @@ bootstrap context에 해결되지 않은 질문이 없는지 확인한다. 계�
 
 관련 코드를 읽어 현재 상태와 제약을 파악한다. 유사한 구현이 이미 있는지, 재사용 가능한 패턴이 있는지 확인한다.
 
-### 3. 단위 분해
+### 3. Slug 결정
+
+plan을 식별하는 slug를 결정한다. slug는 `.claude/docs/{slug}.md`에 plan을 저장할 때 파일명으로 사용된다.
+
+**생성 규칙:**
+1. objective에서 핵심 키워드 2-3개를 추출하여 kebab-case로 조합한다 (예: `add-plan-persistence`)
+2. existing_plan_slugs 중 같은 목적의 slug가 있으면 그 slug를 재사용한다 — 같은 목적의 plan은 항상 같은 slug를 갖는다
+3. 신규 slug가 기존 slug와 충돌하는 경우, suffix를 추가하지 않는다 — 같은 목적으로 판단하여 기존 파일을 덮어쓰는 것이 의도된 동작이다
+4. 영문 소문자와 하이픈만 사용한다
+
+### 4. 단위 분해
 
 목표를 커밋 크기의 비중첩 단위(unit)로 분해한다.
 
@@ -41,15 +52,15 @@ bootstrap context에 해결되지 않은 질문이 없는지 확인한다. 계�
 - depends_on — 선행 단위
 - done_criteria — 완료 조건
 
-### 4. Conflict-safe 보장
+### 5. Conflict-safe 보장
 
 같은 파일을 write하는 unit이 2개 이상 없도록 보장한다. 이 제약을 만족하지 않으면 단위를 재분해한다.
 
-### 5. 병렬 그룹 결정
+### 6. 병렬 그룹 결정
 
 의존성이 없는 unit끼리 병렬 그룹(parallel group)으로 묶는다. 같은 병렬 그룹의 unit은 동시에 spawn 가능하다.
 
-### 6. 전문가 persona 판단
+### 7. 전문가 persona 판단
 
 태스크 성격에 따라 필요한 전문가를 spawn manifest에 포함한다.
 
@@ -63,7 +74,7 @@ bootstrap context에 해결되지 않은 질문이 없는지 확인한다. 계�
 
 전문가 포함은 제안이다. 사용자가 plan 승인 시 추가하거나 제거할 수 있다. 위 목록은 예시이며, 오케스트레이터의 spawn 가능 역할 목록에 있는 전문가를 자유롭게 포함할 수 있다.
 
-### 7. 리뷰 전략 결정
+### 8. 리뷰 전략 결정
 
 이 태스크에 unit-level 리뷰를 추천할지 판단한다.
 
@@ -80,6 +91,7 @@ planner는 하나의 plan을 반환한다. 이 plan은 사용자에게 보여주
 
 ```yaml
 plan:
+  slug: "..."
   status: ready | needs_user_input
   objective: "..."
   units:
@@ -107,10 +119,21 @@ plan:
 
 ### 필드 용도
 
+- `slug`: plan의 고유 식별자. `.claude/docs/{slug}.md`에 저장할 때 파일명으로 사용된다. 실행 절차 3단계에서 결정한다
+- `status`: planner의 진행 상태 — `ready`(실행 가능) 또는 `needs_user_input`(모호함 해소 필요). **persistence status와 별개다**
 - `units`: 오케스트레이터가 검증하고 implementer에게 전달. conflict-safe는 `scope_write` 기준으로 판단
 - `experts`: planner의 추천. 사용자가 plan 승인 시 추가/제거 가능
 - `review_strategy`: planner의 추천. plan 승인 시 사용자에게 표시되며 사용자가 최종 결정
 - `risks`, `blockers`: 사용자에게 표시하기 위한 것. 오케스트레이터는 `blockers`가 비어있지 않으면 실행하지 않고 사용자에게 보고한다
+
+### Persistence status (plan status와 별개)
+
+plan을 `.claude/docs/`에 저장할 때는 plan 자체의 `status`(`ready` | `needs_user_input`)와 독립적인 persistence status를 사용한다:
+
+- `draft` — planner가 생성했으나 사용자가 아직 승인하지 않은 상태. 오케스트레이터가 plan을 파일에 저장할 때 초기값으로 설정한다
+- `approved` — 사용자가 plan을 승인하여 실행이 시작된 상태. 오케스트레이터가 실행 전에 갱신한다
+
+plan의 `status`는 planner가 반환하는 실행 가능 여부를 나타내며, persistence status는 파일에 저장된 plan의 생애주기를 나타낸다. 두 값은 서로 다른 목적으로 사용된다.
 
 ## 제약
 

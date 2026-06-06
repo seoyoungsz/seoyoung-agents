@@ -51,6 +51,7 @@ planner, implementer, reviewer, handoff, architect, qa-expert, linear-expert, sl
 - must_verify_behaviors — 반드시 검증해야 할 동작 목록
 - attempt_number — 몇 번째 시도인지
 - review_findings — 재dispatch 시 이전 `review_result.findings` 배열 (high severity만 전달)
+- existing_plan_slugs — planner spawn 시 `.claude/docs/`에 존재하는 plan slug 목록 (파일명에서 `.md` 제거한 값)
 
 ### 전문가 persona 호출
 
@@ -165,6 +166,46 @@ worktree 격리는 사용하지 않는다. 비용이 높고, 충돌을 뒤로 �
 - 캐시에 기록된 명령이 실행 시 "command not found"로 실패하는 경우
 - 사용자가 명시적으로 재감지를 요청하는 경우
 
+## Plan 저장/로드
+
+### Plan 저장
+
+planner가 plan을 반환하면 `.claude/docs/{slug}.md`에 저장한다. slug는 planner가 반환한 plan에서 추출한다.
+
+저장 포맷:
+
+```markdown
+---
+slug: {slug}
+status: draft
+objective: "..."
+created_at: {date}
+updated_at: {date}
+---
+
+{plan YAML 본문}
+```
+
+- planner 재spawn 시 같은 slug로 덮어쓴다 (updated_at 갱신)
+- 사용자가 plan을 승인하면 frontmatter의 `status`를 `approved`로 업데이트하고 `updated_at`을 갱신한다
+
+### Plan 로드
+
+`/task` 시작 시 `.claude/docs/`에서 `.md` 파일을 탐색한다. frontmatter에 `slug`와 `status` 필드가 모두 존재하는 파일만 plan으로 인식한다. slug의 정본(source of truth)은 frontmatter의 `slug` 필드다. 파일명은 slug와 일치시키되, 불일치 시 frontmatter를 우선한다.
+
+1. `status: approved`인 plan이 있으면 사용자에게 제안한다
+   - 여러 개 있으면 `updated_at` 기준 최신을 우선 제안하되, 전체 목록도 함께 보여준다
+   - 수락 시: planner spawn을 건너뛰고 바로 manifest 검증 → implementer 실행
+   - 거절 시: 기존 flow(planner spawn)로 진행
+2. `status: draft`인 plan만 있으면 "이전 draft가 있다. 이어서 할까, 새로 시작할까?" 제안한다
+   - 이어서: draft를 planner에게 bootstrap context로 전달하여 재개
+   - 새로 시작: draft를 무시하고 기존 flow로 진행
+3. 해당하는 plan이 없으면 탐색 단계를 건너뛰고 기존 flow로 진행한다
+
+### Spawn 규칙 변경
+
+planner를 spawn할 때 `.claude/docs/`의 파일 목록을 확인하고, 각 파일명에서 `.md`를 제거한 slug 목록을 `existing_plan_slugs`로 전달한다.
+
 ## 분배 흐름
 
 ### 복잡한 요청
@@ -178,13 +219,19 @@ notion-expert 읽기 (Notion 기획 문서가 지정된 경우)
     ↓
 sensor-binding 확인 (캐시 있으면 skip)
     ↓
+plan 로드 탐색 (.claude/docs/ 탐색 → approved/draft 제안)
+    ↓
 deep-interview (아래 조건 중 하나라도 해당하면 실행)
     ↓
-planner spawn (단위 분해 + spawn manifest + 전문가 포함)
+planner spawn (단위 분해 + spawn manifest + 전문가 포함, existing_plan_slugs 전달)
     ↓
 planner 실패 시 → 사용자에게 보고, 수동 범위 지정 요청
     ↓
+plan 저장 (.claude/docs/{slug}.md, status: draft)
+    ↓
 사용자 plan 승인 (전문가 추가/제거 가능)
+    ↓
+plan 업데이트 (status: approved, updated_at 갱신)
     ↓
 spawn manifest 검증 (아래 기준)
     ↓
