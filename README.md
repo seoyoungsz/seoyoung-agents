@@ -144,6 +144,10 @@ npm install
 # 전체 배포
 npm run sync
 
+# 백업 후 배포 (기존 파일을 날짜 폴더로 백업)
+npm run sync:backup
+# → ~/.claude/backup/2026-06-06_1128/claude/{agents,skills,commands,adapters}/
+
 # dry-run (변경 없이 확인만)
 npm run sync:dry
 

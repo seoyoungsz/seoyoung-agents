@@ -23,8 +23,11 @@ interface SyncResult {
   removed: string[]
 }
 
+const BACKUP_DIR = join(HOME, ".claude", "backup")
+
 const args = process.argv.slice(2)
 const dryRun = args.includes("--dry-run")
+const doBackup = args.includes("--backup")
 const targetFilter = args.find((a) => a.startsWith("--target="))?.split("=")[1] as
   | Target
   | undefined
@@ -38,6 +41,38 @@ if (args.includes("--target") && !targetFlagValue) {
 }
 
 const targetFlag = targetFlagValue
+
+function getDateStamp(): string {
+  const now = new Date()
+  const y = now.getFullYear()
+  const m = String(now.getMonth() + 1).padStart(2, "0")
+  const d = String(now.getDate()).padStart(2, "0")
+  const h = String(now.getHours()).padStart(2, "0")
+  const min = String(now.getMinutes()).padStart(2, "0")
+  return `${y}-${m}-${d}_${h}${min}`
+}
+
+async function backupDir(destDir: string, backupRoot: string, label: string): Promise<number> {
+  const files = await listMdFiles(destDir)
+  if (files.length === 0) return 0
+
+  if (!dryRun) {
+    await mkdir(backupRoot, { recursive: true })
+  }
+
+  let count = 0
+  for (const file of files) {
+    const src = join(destDir, file)
+    const dest = join(backupRoot, file)
+    if (dryRun) {
+      console.log(`  [dry-run] would backup: ${file} → ${backupRoot}/`)
+    } else {
+      await copyFile(src, dest)
+    }
+    count++
+  }
+  return count
+}
 
 async function listMdFiles(dir: string): Promise<string[]> {
   if (!existsSync(dir)) return []
@@ -109,6 +144,27 @@ function printResult(label: string, result: SyncResult) {
   }
 }
 
+async function backupTarget(target: Target, stamp: string) {
+  const paths = TARGETS[target]
+  const backupBase = join(BACKUP_DIR, stamp, target)
+  console.log(`\n▸ Backing up ${target} → ${backupBase}`)
+
+  const dirs = [
+    { dir: paths.agents, label: "agents" },
+    { dir: paths.skills, label: "skills" },
+    { dir: paths.commands, label: "commands" },
+    { dir: paths.adapters, label: "adapters" },
+  ]
+
+  let total = 0
+  for (const { dir, label } of dirs) {
+    const count = await backupDir(dir, join(backupBase, label), label)
+    if (count > 0) {
+      console.log(`  ${label}: ${count} files backed up`)
+    }
+  }
+}
+
 async function syncTarget(target: Target) {
   const paths = TARGETS[target]
   console.log(`\n▸ Syncing to ${target}`)
@@ -153,6 +209,16 @@ async function main() {
       console.error(`unknown target: ${target}`)
       process.exit(1)
     }
+  }
+
+  if (doBackup) {
+    const stamp = getDateStamp()
+    for (const target of targets) {
+      await backupTarget(target, stamp)
+    }
+  }
+
+  for (const target of targets) {
     await syncTarget(target)
   }
 
