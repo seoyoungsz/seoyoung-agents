@@ -155,16 +155,46 @@ npm run sync:dry
 
 # Claude Code만
 npm run sync:claude
+
+# Codex만
+npm run sync:codex
 ```
 
 배포 경로:
 
-| 소스        | 대상                                  |
-| ----------- | ------------------------------------- |
-| `personas/` | `~/.claude/agents/`                   |
-| `guides/`   | `~/.claude/skills/seoyoung/`          |
-| `commands/` | `~/.claude/commands/`                 |
-| `adapters/` | `~/.claude/skills/seoyoung/adapters/` |
+### Claude Code
+
+| 소스 | 대상 | 포맷 |
+|------|------|------|
+| `personas/` | `~/.claude/agents/` | .md (복사) |
+| `guides/` | `~/.claude/skills/seoyoung/` | .md (복사) |
+| `commands/` | `~/.claude/commands/` | .md (복사) |
+| `adapters/` | `~/.claude/skills/seoyoung/adapters/` | .md (복사) |
+
+### Codex
+
+| 소스 | 대상 | 포맷 |
+|------|------|------|
+| `personas/` | `~/.codex/agents/` | .toml (md → toml 변환) |
+
+Codex는 personas만 배포한다. guides, commands, adapters는 Codex에 해당 개념이 없다.
+
+모델 매핑:
+
+| md frontmatter | Codex model | model_reasoning_effort |
+|---|---|---|
+| `model: opus` | gpt-5.5 | xhigh |
+| `model: sonnet` | gpt-5.5 | medium |
+| model 없음 | gpt-5.5 | medium |
+
+역할별로 effort를 오버라이드하려면 persona frontmatter에 `codex_effort` 필드를 추가한다:
+
+```yaml
+model: sonnet
+codex_effort: low   # 기본 medium 대신 low 사용
+```
+
+`spawnable: false`인 persona(orchestrator)는 Codex에 배포하지 않는다.
 
 ## Orphan 파일 관리
 

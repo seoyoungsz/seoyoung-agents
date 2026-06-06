@@ -1,4 +1,4 @@
-import { readdir, readFile, copyFile, mkdir, rm } from "fs/promises"
+import { readdir, readFile, writeFile, copyFile, mkdir } from "fs/promises"
 import { join, dirname } from "path"
 import { existsSync } from "fs"
 import { homedir } from "os"
@@ -7,24 +7,44 @@ import { fileURLToPath } from "url"
 const SRC = import.meta.dirname ?? dirname(fileURLToPath(import.meta.url))
 const HOME = homedir()
 
-const TARGETS = {
+// --- Target definitions ---
+
+interface TargetDirs {
+  agents: string
+  skills?: string
+  commands?: string
+  adapters?: string
+}
+
+interface TargetConfig {
+  dirs: TargetDirs
+  backupDir: string
+  format: "md" | "toml"
+}
+
+const TARGETS: Record<string, TargetConfig> = {
   claude: {
-    agents: join(HOME, ".claude", "agents"),
-    skills: join(HOME, ".claude", "skills", "seoyoung"),
-    commands: join(HOME, ".claude", "commands"),
-    adapters: join(HOME, ".claude", "skills", "seoyoung", "adapters"),
+    dirs: {
+      agents: join(HOME, ".claude", "agents"),
+      skills: join(HOME, ".claude", "skills", "seoyoung"),
+      commands: join(HOME, ".claude", "commands"),
+      adapters: join(HOME, ".claude", "skills", "seoyoung", "adapters"),
+    },
+    backupDir: join(HOME, ".claude", "backup"),
+    format: "md",
   },
-} as const
+  codex: {
+    dirs: {
+      agents: join(HOME, ".codex", "agents"),
+    },
+    backupDir: join(HOME, ".codex", "backup"),
+    format: "toml",
+  },
+}
 
 type Target = keyof typeof TARGETS
 
-interface SyncResult {
-  copied: string[]
-  skipped: string[]
-  removed: string[]
-}
-
-const BACKUP_DIR = join(HOME, ".claude", "backup")
+// --- CLI args ---
 
 const args = process.argv.slice(2)
 const dryRun = args.includes("--dry-run")
@@ -32,7 +52,7 @@ const doBackup = args.includes("--backup")
 const validTargets = Object.keys(TARGETS)
 
 function parseTarget(): Target | undefined {
-  const eqForm = args.find((a) => a.startsWith("--target="))?.split("=")[1]
+  const eqForm = args.find((a: string) => a.startsWith("--target="))?.split("=")[1]
   const spaceForm = args.includes("--target")
     ? args[args.indexOf("--target") + 1]
     : undefined
@@ -54,6 +74,8 @@ function parseTarget(): Target | undefined {
 
 const targetFlag = parseTarget()
 
+// --- Utilities ---
+
 function getDateStamp(): string {
   const now = new Date()
   const y = now.getFullYear()
@@ -64,32 +86,107 @@ function getDateStamp(): string {
   return `${y}-${m}-${d}_${h}${min}`
 }
 
-async function backupDir(destDir: string, backupRoot: string, label: string): Promise<number> {
-  const files = await listMdFiles(destDir)
-  if (files.length === 0) return 0
-
-  if (!dryRun) {
-    await mkdir(backupRoot, { recursive: true })
-  }
-
-  let count = 0
-  for (const file of files) {
-    const src = join(destDir, file)
-    const dest = join(backupRoot, file)
-    if (dryRun) {
-      console.log(`  [dry-run] would backup: ${file} → ${backupRoot}/`)
-    } else {
-      await copyFile(src, dest)
-    }
-    count++
-  }
-  return count
-}
-
-async function listMdFiles(dir: string): Promise<string[]> {
+async function listFiles(dir: string, ext: string): Promise<string[]> {
   if (!existsSync(dir)) return []
   const entries = await readdir(dir)
-  return entries.filter((f) => f.endsWith(".md"))
+  return entries.filter((f: string) => f.endsWith(ext))
+}
+
+// --- Frontmatter parsing ---
+
+interface Frontmatter {
+  name: string
+  description: string
+  model: string
+  codexEffort: string
+  spawnable: boolean
+  body: string
+}
+
+function parseFrontmatter(content: string): Frontmatter {
+  const fmMatch = content.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n([\s\S]*)$/)
+  if (!fmMatch) {
+    return { name: "", description: "", model: "", codexEffort: "", spawnable: true, body: content }
+  }
+
+  const fmBlock = fmMatch[1]
+  const body = fmMatch[2]
+
+  const getField = (s: string, field: string) =>
+    s.match(new RegExp(`^${field}:\\s*(.+)$`, "m"))?.[1]?.trim() ?? ""
+
+  const spawnableRaw = getField(fmBlock, "spawnable")
+
+  return {
+    name: getField(fmBlock, "name"),
+    description: getField(fmBlock, "description"),
+    model: getField(fmBlock, "model"),
+    codexEffort: getField(fmBlock, "codex_effort"),
+    spawnable: spawnableRaw !== "false",
+    body: body.trim(),
+  }
+}
+
+// --- MD → TOML conversion ---
+
+interface ModelMapping {
+  model: string
+  effort: string
+}
+
+function mapModel(claudeModel: string): ModelMapping {
+  switch (claudeModel) {
+    case "opus":
+      return { model: "gpt-5.5", effort: "xhigh" }
+    case "sonnet":
+      return { model: "gpt-5.5", effort: "medium" }
+    default:
+      return { model: "gpt-5.5", effort: "medium" }
+  }
+}
+
+function escapeTomlString(s: string): string {
+  return s
+    .replace(/\\/g, "\\\\")
+    .replace(/"/g, '\\"')
+    .replace(/\n/g, " ")
+    .replace(/\r/g, "")
+}
+
+function escapeTomlMultiline(s: string): string {
+  return s.replace(/\\/g, "\\\\").replace(/"""/g, '""\\"')
+}
+
+const VALID_EFFORTS = ["low", "medium", "high", "xhigh"] as const
+
+function convertMdToToml(mdContent: string): string | null {
+  const fm = parseFrontmatter(mdContent)
+
+  if (!fm.spawnable) return null
+
+  const rawEffort = fm.codexEffort || mapModel(fm.model).effort
+  const effort = VALID_EFFORTS.includes(rawEffort as typeof VALID_EFFORTS[number])
+    ? rawEffort
+    : "medium"
+  const model = mapModel(fm.model).model
+  const escapedBody = escapeTomlMultiline(fm.body)
+
+  const lines: string[] = []
+  if (fm.name) lines.push(`name = "${escapeTomlString(fm.name)}"`)
+  if (fm.description) lines.push(`description = "${escapeTomlString(fm.description)}"`)
+  lines.push(`model = "${model}"`)
+  lines.push(`model_reasoning_effort = "${effort}"`)
+  lines.push(`developer_instructions = """\n${escapedBody}\n"""`)
+
+  return lines.join("\n") + "\n"
+}
+
+// --- Sync operations ---
+
+interface SyncResult {
+  copied: string[]
+  skipped: string[]
+  removed: string[]
 }
 
 async function syncDir(
@@ -99,7 +196,7 @@ async function syncDir(
 ): Promise<SyncResult> {
   const result: SyncResult = { copied: [], skipped: [], removed: [] }
 
-  const srcFiles = await listMdFiles(srcDir)
+  const srcFiles = await listFiles(srcDir, ".md")
   if (srcFiles.length === 0) {
     console.log(`  ${label}: no files to sync`)
     return result
@@ -130,10 +227,70 @@ async function syncDir(
     result.copied.push(file)
   }
 
-  const destFiles = await listMdFiles(destDir)
+  const destFiles = await listFiles(destDir, ".md")
   const srcSet = new Set(srcFiles)
   for (const file of destFiles) {
     if (!srcSet.has(file)) {
+      result.removed.push(file)
+    }
+  }
+
+  return result
+}
+
+async function syncConvertedDir(
+  srcDir: string,
+  destDir: string,
+  label: string
+): Promise<SyncResult> {
+  const result: SyncResult = { copied: [], skipped: [], removed: [] }
+
+  const srcFiles = await listFiles(srcDir, ".md")
+  if (srcFiles.length === 0) {
+    console.log(`  ${label}: no files to sync`)
+    return result
+  }
+
+  if (!dryRun) {
+    await mkdir(destDir, { recursive: true })
+  }
+
+  const convertedFiles: string[] = []
+
+  for (const file of srcFiles) {
+    const src = join(srcDir, file)
+    const destFile = file.replace(/\.md$/, ".toml")
+    const dest = join(destDir, destFile)
+
+    const mdContent = await readFile(src, "utf-8")
+    const tomlContent = convertMdToToml(mdContent)
+
+    if (tomlContent === null) {
+      continue
+    }
+
+    convertedFiles.push(destFile)
+
+    if (existsSync(dest)) {
+      const destContent = await readFile(dest, "utf-8")
+      if (tomlContent === destContent) {
+        result.skipped.push(destFile)
+        continue
+      }
+    }
+
+    if (dryRun) {
+      console.log(`  [dry-run] would convert: ${file} → ${destDir}/${destFile}`)
+    } else {
+      await writeFile(dest, tomlContent, "utf-8")
+    }
+    result.copied.push(destFile)
+  }
+
+  const destFiles = await listFiles(destDir, ".toml")
+  const expectedSet = new Set(convertedFiles)
+  for (const file of destFiles) {
+    if (!expectedSet.has(file)) {
       result.removed.push(file)
     }
   }
@@ -156,58 +313,102 @@ function printResult(label: string, result: SyncResult) {
   }
 }
 
+// --- Backup ---
+
+async function backupDir(destDir: string, backupRoot: string, ext: string): Promise<number> {
+  const files = await listFiles(destDir, ext)
+  if (files.length === 0) return 0
+
+  if (!dryRun) {
+    await mkdir(backupRoot, { recursive: true })
+  }
+
+  let count = 0
+  for (const file of files) {
+    const src = join(destDir, file)
+    const dest = join(backupRoot, file)
+    if (dryRun) {
+      console.log(`  [dry-run] would backup: ${file} → ${backupRoot}/`)
+    } else {
+      await copyFile(src, dest)
+    }
+    count++
+  }
+  return count
+}
+
 async function backupTarget(target: Target, stamp: string) {
-  const paths = TARGETS[target]
-  const backupBase = join(BACKUP_DIR, stamp, target)
+  const config = TARGETS[target]
+  const backupBase = join(config.backupDir, stamp, target)
+  const ext = config.format === "toml" ? ".toml" : ".md"
   console.log(`\n▸ Backing up ${target} → ${backupBase}`)
 
-  const dirs = [
-    { dir: paths.agents, label: "agents" },
-    { dir: paths.skills, label: "skills" },
-    { dir: paths.commands, label: "commands" },
-    { dir: paths.adapters, label: "adapters" },
-  ]
+  const dirs: Array<{ dir: string; label: string }> = []
+  dirs.push({ dir: config.dirs.agents, label: "agents" })
+  if (config.dirs.skills) dirs.push({ dir: config.dirs.skills, label: "skills" })
+  if (config.dirs.commands) dirs.push({ dir: config.dirs.commands, label: "commands" })
+  if (config.dirs.adapters) dirs.push({ dir: config.dirs.adapters, label: "adapters" })
 
   for (const { dir, label } of dirs) {
-    const count = await backupDir(dir, join(backupBase, label), label)
+    const count = await backupDir(dir, join(backupBase, label), ext)
     if (count > 0) {
       console.log(`  ${label}: ${count} files backed up`)
     }
   }
 }
 
+// --- Sync targets ---
+
 async function syncTarget(target: Target) {
-  const paths = TARGETS[target]
+  const config = TARGETS[target]
   console.log(`\n▸ Syncing to ${target}`)
+
+  if (config.format === "toml") {
+    const result = await syncConvertedDir(
+      join(SRC, "personas"),
+      config.dirs.agents,
+      "personas → agents (toml)"
+    )
+    printResult("personas → agents (toml)", result)
+    return
+  }
 
   const personasResult = await syncDir(
     join(SRC, "personas"),
-    paths.agents,
+    config.dirs.agents,
     "personas → agents"
   )
   printResult("personas → agents", personasResult)
 
-  const guidesResult = await syncDir(
-    join(SRC, "guides"),
-    paths.skills,
-    "guides → skills"
-  )
-  printResult("guides → skills", guidesResult)
+  if (config.dirs.skills) {
+    const guidesResult = await syncDir(
+      join(SRC, "guides"),
+      config.dirs.skills,
+      "guides → skills"
+    )
+    printResult("guides → skills", guidesResult)
+  }
 
-  const commandsResult = await syncDir(
-    join(SRC, "commands"),
-    paths.commands,
-    "commands → commands"
-  )
-  printResult("commands → commands", commandsResult)
+  if (config.dirs.commands) {
+    const commandsResult = await syncDir(
+      join(SRC, "commands"),
+      config.dirs.commands,
+      "commands → commands"
+    )
+    printResult("commands → commands", commandsResult)
+  }
 
-  const adaptersResult = await syncDir(
-    join(SRC, "adapters"),
-    paths.adapters,
-    "adapters → adapters"
-  )
-  printResult("adapters → adapters", adaptersResult)
+  if (config.dirs.adapters) {
+    const adaptersResult = await syncDir(
+      join(SRC, "adapters"),
+      config.dirs.adapters,
+      "adapters → adapters"
+    )
+    printResult("adapters → adapters", adaptersResult)
+  }
 }
+
+// --- Main ---
 
 async function main() {
   console.log(`seoyoung-agents sync${dryRun ? " (dry-run)" : ""}`)

@@ -3,6 +3,7 @@ name: handoff
 description: 최종 전달 요약을 작성하는 leaf worker. 코드를 수정하지 않는다. 모든 검증이 완료된 후에만 실행된다.
 tools: Read, Grep, Glob
 model: sonnet
+codex_effort: low
 related_guides: []
 ---
 

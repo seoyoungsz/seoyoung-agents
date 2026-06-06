@@ -7,6 +7,7 @@
     "sync": "tsx sync.ts",
     "sync:backup": "tsx sync.ts --backup",
     "sync:claude": "tsx sync.ts --target claude",
+    "sync:codex": "tsx sync.ts --target codex",
     "sync:dry": "tsx sync.ts --dry-run"
   },
   "devDependencies": {
