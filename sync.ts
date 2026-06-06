@@ -1,9 +1,10 @@
 import { readdir, readFile, copyFile, mkdir, rm } from "fs/promises"
-import { join, basename } from "path"
+import { join, dirname } from "path"
 import { existsSync } from "fs"
 import { homedir } from "os"
+import { fileURLToPath } from "url"
 
-const SRC = import.meta.dirname!
+const SRC = import.meta.dirname ?? dirname(fileURLToPath(import.meta.url))
 const HOME = homedir()
 
 const TARGETS = {
@@ -28,19 +29,30 @@ const BACKUP_DIR = join(HOME, ".claude", "backup")
 const args = process.argv.slice(2)
 const dryRun = args.includes("--dry-run")
 const doBackup = args.includes("--backup")
-const targetFilter = args.find((a) => a.startsWith("--target="))?.split("=")[1] as
-  | Target
-  | undefined
-const targetFlagValue = args.includes("--target")
-  ? (args[args.indexOf("--target") + 1] as Target | undefined)
-  : targetFilter
+const validTargets = Object.keys(TARGETS)
 
-if (args.includes("--target") && !targetFlagValue) {
-  console.error("error: --target requires a value (e.g., --target claude)")
-  process.exit(1)
+function parseTarget(): Target | undefined {
+  const eqForm = args.find((a) => a.startsWith("--target="))?.split("=")[1]
+  const spaceForm = args.includes("--target")
+    ? args[args.indexOf("--target") + 1]
+    : undefined
+
+  const raw = eqForm ?? spaceForm
+
+  if (args.includes("--target") && !eqForm && !spaceForm) {
+    console.error("error: --target requires a value (e.g., --target claude)")
+    process.exit(1)
+  }
+
+  if (raw && !validTargets.includes(raw)) {
+    console.error(`error: unknown target '${raw}'. valid targets: ${validTargets.join(", ")}`)
+    process.exit(1)
+  }
+
+  return raw as Target | undefined
 }
 
-const targetFlag = targetFlagValue
+const targetFlag = parseTarget()
 
 function getDateStamp(): string {
   const now = new Date()
@@ -156,7 +168,6 @@ async function backupTarget(target: Target, stamp: string) {
     { dir: paths.adapters, label: "adapters" },
   ]
 
-  let total = 0
   for (const { dir, label } of dirs) {
     const count = await backupDir(dir, join(backupBase, label), label)
     if (count > 0) {

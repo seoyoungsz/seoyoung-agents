@@ -165,6 +165,19 @@ npm run sync:claude
 | `commands/` | `~/.claude/commands/`                 |
 | `adapters/` | `~/.claude/skills/seoyoung/adapters/` |
 
+## Orphan 파일 관리
+
+sync 시 소스에서 삭제/rename된 파일이 대상 디렉토리에 남아 있으면 "orphaned" 경고를 출력한다. **자동 삭제하지 않는다** — 수동으로 확인 후 삭제해야 한다.
+
+```bash
+# sync 출력에서 orphan 확인
+npm run sync
+# → "2 orphaned in dest (old-agent.md, renamed-guide.md) — not auto-deleted"
+
+# 수동 삭제
+rm ~/.claude/agents/old-agent.md
+```
+
 ## 틀(skeleton) guides 채우기
 
 `(틀)` 표시된 guides는 섹션 구조만 잡혀 있다. 실제 프로젝트에서 작업하면서 내용을 채운다:

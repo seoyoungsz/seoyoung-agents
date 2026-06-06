@@ -89,7 +89,7 @@ spawn 시 해당 persona의 `related_guides`를 확인하고, 나열된 guide를
 
 - sub-agent는 leaf worker다. 더 이상의 sub-agent를 spawn할 수 없다
 - sub-agent 간 직접 통신은 없다. 모든 정보는 오케스트레이터를 경유한다
-- implementer는 작업 중 커밋하지 않는다. 코드 작성만 하고, 커밋은 unit 완료 후 오케스트레이터가 변경 단위별로 분리하여 수행한다
+- implementer는 작업 중 커밋하지 않는다. 코드 작성만 하고, 커밋은 unit 완료 후 오케스트레이터가 변경 단위별로 분리하여 수행한다. 커밋 메시지는 `guides/git-workflow.md`의 컨벤션을 따른다
 
 ## 리뷰 정책
 
