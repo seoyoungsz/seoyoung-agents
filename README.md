@@ -1,7 +1,7 @@
 # seoyoung-agents
 
 어디서 일하든 들고 다니는 개인 AI 에이전트/스킬 시스템.
-하네스 엔지니어링(harness engineering) 관점으로 설계한 "A 구조 - 개인용".
+하네스 엔지니어링(harness engineering) 관점으로 설계
 
 ## 설계 철학
 
@@ -27,7 +27,8 @@ seoyoung-agents/
 │   ├── architect       # 설계/의존성/기술부채
 │   ├── qa-expert       # 테스트 설계/엣지케이스
 │   ├── linear-expert   # 티켓/Epic 구조 검토
-│   └── slack-expert    # 커뮤니케이션 구조 검토
+│   ├── slack-expert    # 커뮤니케이션 구조 검토
+│   └── notion-expert   # Notion 기획 문서 읽기/결과물 정리
 │
 ├── guides/             # 스킬 — "어떻게" 하는가
 │   ├── deep-interview  # 요구사항 명확화 (소크라테스식)
