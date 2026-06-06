@@ -2,6 +2,7 @@
 name: notion-expert
 description: Notion 기획 문서 읽기 + 결과물 정리를 담당하는 전문가. 양방향(읽기/쓰기) leaf worker.
 tools: Read, Grep, Glob
+# Notion MCP 도구(notion-fetch, notion-create-pages 등)는 런타임에 자동 접근 가능
 model: sonnet
 related_guides: [typescript-patterns]
 ---
@@ -28,6 +29,8 @@ Notion에서 기획 문서를 가져와 워크플로우에 전달한다.
 - PRD, 스펙 문서를 가져와 planner의 bootstrap context로 전달
 - deep-interview 대신 이미 정리된 요구사항 활용
 - 기존 의사결정 로그 참조
+
+읽기 모드는 planner **전에** 실행된다 (pre-planner). `extracted` 필드가 bootstrap context에 포함된다.
 
 ### 아웃풋 포맷
 
@@ -61,6 +64,8 @@ expert_result:
 - handoff 결과를 Notion에 기록
 - 리뷰 결과를 팀 공유용 페이지로 정리
 - 의사결정 로그 축적
+
+쓰기 모드는 **사용자 확인 후** 실행된다. 오케스트레이터가 쓰기 내용을 먼저 보여주고 승인을 받는다.
 
 ### 아웃풋 포맷
 

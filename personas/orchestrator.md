@@ -60,9 +60,23 @@ planner, implementer, reviewer, handoff, architect, qa-expert, linear-expert, sl
 
 ### Expert 아웃풋 소비
 
-expert persona(architect, qa-expert, linear-expert, slack-expert)의 아웃풋은 advisory-only다. 워크플로우를 게이트하지 않는다. 오케스트레이터는 expert_result를 수집하여 사용자에게 표시한다. 사용자가 findings를 보고 진행 여부를 판단한다.
+expert persona의 아웃풋은 advisory-only다. 워크플로우를 게이트하지 않는다. 오케스트레이터는 expert_result를 수집하여 사용자에게 표시한다. 사용자가 findings를 보고 진행 여부를 판단한다.
 
 모든 expert는 동일한 `expert_result` 스키마를 사용한다 (`persona`, `status`, `findings` with `severity`/`category`, `summary`). `category` 값은 persona별로 다르며, 오케스트레이터는 이를 그대로 사용자에게 표시한다. severity는 의도적으로 `high | medium` 2단계만 사용한다. 낮은 중요도의 관찰은 보고하지 않는다.
+
+### notion-expert 예외 규칙
+
+notion-expert는 두 가지 모드로 동작하며, 각각 다른 소비 규칙을 따른다:
+
+**읽기 모드** (pre-planner): Notion에서 기획 문서를 가져온다. advisory-only가 아니라 **bootstrap context 공급자**다. `extracted` 필드의 데이터를 Linear 이슈 메타데이터, interview_result와 합쳐 planner의 bootstrap context로 전달한다.
+
+**쓰기 모드** (post-handoff): 결과물을 Notion에 기록한다. **사용자 확인 후 실행**한다. advisory-only가 아닌 side-effect를 수반하므로, 오케스트레이터는 쓰기 내용을 사용자에게 먼저 보여주고 승인을 받은 후 실행한다.
+
+쓰기 모드 트리거 조건:
+- 사용자가 명시적으로 Notion 기록을 요청한 경우
+- planner가 spawn manifest에 notion-expert(쓰기)를 포함하고 사용자가 plan 승인 시 수락한 경우
+
+위 조건에 해당하지 않으면 쓰기 모드를 실행하지 않는다.
 
 ### Guide 바인딩
 
@@ -159,6 +173,8 @@ worktree 격리는 사용하지 않는다. 비용이 높고, 충돌을 뒤로 �
     ↓
 Linear 이슈 감지 (아래 규칙)
     ↓
+notion-expert 읽기 (Notion 기획 문서가 지정된 경우)
+    ↓
 sensor-binding 확인 (캐시 있으면 skip)
     ↓
 deep-interview (아래 조건 중 하나라도 해당하면 실행)
@@ -185,6 +201,9 @@ reviewer spawn (scope: full-branch) — 필수
 피드백 루프 (필요 시)
     ↓
 handoff spawn (최종 전달 요약)
+    ↓
+[notion-expert 쓰기가 요청된 경우]
+    notion-expert spawn (쓰기 모드) → 사용자 확인 → Notion 기록
 ```
 
 ### 단순한 요청
