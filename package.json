@@ -10,6 +10,8 @@
     "sync:dry": "tsx sync.ts --dry-run"
   },
   "devDependencies": {
-    "tsx": "^4.19.0"
+    "@types/node": "^25.9.2",
+    "tsx": "^4.19.0",
+    "typescript": "^6.0.3"
   }
 }
