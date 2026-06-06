@@ -54,7 +54,8 @@ seoyoung-agents/
 │   ├── task            # /task — 전체 오케스트레이션 워크플로우
 │   ├── review          # /review — unit scope 리뷰
 │   ├── review-branch   # /review-branch — full-branch 리뷰
-│   └── commit          # /commit — 컨벤션에 맞춰 커밋 생성
+│   ├── commit          # /commit — 컨벤션에 맞춰 커밋 생성
+│   └── e2e             # /e2e — E2E 테스트 실행 + 결과 요약
 │
 ├── sync.ts             # 배포 스크립트
 └── package.json
@@ -105,6 +106,14 @@ sensor-binding 확인 → diff 생성 → computational 센서 → reviewer (uni
 sensor-binding 확인 → base branch diff → computational 센서 (+ build) → reviewer (full-branch)
 ```
 
+### /e2e — E2E 테스트 실행
+
+```
+sensor-binding 확인 → readiness 체크 → e2e 명령 실행 → 결과 요약
+```
+
+프로젝트에 E2E 명령이 감지된 경우에만 동작한다. `/task` 워크플로우에서는 full-branch reviewer 전에 자동 실행된다.
+
 ## 리뷰 루프
 
 ```
@@ -131,7 +140,8 @@ status: clean → 진행
     "lint": { "command": "pnpm lint" },
     "typecheck": { "command": "pnpm typecheck" },
     "test": { "command": "pnpm test" },
-    "build": { "command": "pnpm build" }
+    "build": { "command": "pnpm build" },
+    "e2e": { "command": "pnpm e2e" }
   },
   "base_branch": "dev"
 }

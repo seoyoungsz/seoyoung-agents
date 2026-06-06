@@ -80,6 +80,7 @@ review_result:
     typecheck: pass | fail
     test: pass | fail
     build: pass | fail | skipped
+    e2e: pass | fail | skipped
   findings:
     - severity: high | medium
       category: security | correctness | quality | performance

@@ -1,6 +1,6 @@
 ---
 name: sensor-binding
-description: 프로젝트의 computational 센서(lint, typecheck, test, build)를 자동 감지하고 바인딩하는 규칙
+description: 프로젝트의 computational 센서(lint, typecheck, test, build, e2e)를 자동 감지하고 바인딩하는 규칙
 metadata:
   type: adapter
 ---
@@ -22,6 +22,7 @@ metadata:
 | test      | `test` → `vitest` → `jest`                   | 없으면 skip                              |
 | build     | `build` → `next build` → `vite build`        | 없으면 skip                              |
 | check     | `check` (lint+typecheck 통합)                | 없으면 lint + typecheck 개별 실행        |
+| e2e       | `e2e` → `test:e2e` → `playwright` → `cypress` | 없으면 skip                              |
 
 패키지 매니저는 lockfile로 판단한다:
 
@@ -101,12 +102,42 @@ reviewer의 `full-branch` 리뷰 시 diff 기준점이 되는 base branch를 감
     "lint": { "command": "pnpm lint" },
     "typecheck": { "command": "pnpm typecheck" },
     "test": { "command": "pnpm test" },
-    "build": { "command": "pnpm build" }
+    "build": { "command": "pnpm build" },
+    "e2e": { "command": "pnpm e2e" }
   },
   "base_branch": "dev",
   "detected_at": "2026-06-05"
 }
 ```
+
+`e2e` 센서가 없으면 해당 키를 생략한다.
+
+### E2E readiness
+
+e2e 명령이 감지되더라도 실행 가능 여부는 보장되지 않는다. 오케스트레이터는 실행 전 아래를 확인한다:
+
+**1. Non-interactive 모드 확인**
+
+| 프레임워크 | 감지 방법 | CI 모드 플래그 |
+|-----------|----------|--------------|
+| Playwright | `playwright.config.*` 존재 | `CI=true` 환경 변수 |
+| Cypress | `cypress.config.*` 존재 | `--headless` 플래그 |
+| 기타 | package.json scripts에서 추론 | 사용자에게 1회 질문 |
+
+**2. Dev server 확인**
+
+- `playwright.config.*`에 `webServer` 설정이 있으면 → 자체 관리, skip
+- 없으면 → 감지된 dev 명령의 포트가 열려 있는지 확인
+- 포트 미확인 시 사용자에게 보고
+
+**3. 브라우저 바이너리 확인**
+
+| 프레임워크 | 확인 명령 |
+|-----------|----------|
+| Playwright | `npx playwright install --check` |
+| Cypress | `npx cypress verify` |
+
+확인 실패 시 e2e를 skip하고 어떤 조건이 미충족인지 구체적으로 보고한다.
 
 `check` 스크립트(lint+typecheck 통합)가 감지된 경우:
 

@@ -17,3 +17,4 @@
 - `/review` — unit scope 리뷰
 - `/review-branch` — full-branch 리뷰
 - `/commit` — 컨벤션에 맞춰 커밋
+- `/e2e` — E2E 테스트 실행 + 결과 요약

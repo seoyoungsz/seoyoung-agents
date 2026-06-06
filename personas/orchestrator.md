@@ -141,6 +141,7 @@ computational 센서는 오케스트레이터가 직접 실행한다. reviewer�
 |-------|----------|
 | unit | lint, typecheck, test |
 | full-branch | lint, typecheck, test, build |
+| full-branch + e2e | lint, typecheck, test, build, e2e (감지 + readiness 충족 시) |
 
 프로젝트에 `check` 스크립트(lint+typecheck 통합)가 있으면 lint, typecheck 대신 check를 실행한다. sensor-binding 감지 결과에 따른다. reviewer에게 전달할 때는 check 결과를 `lint: pass, typecheck: pass`로 분리하여 전달한다. reviewer의 YAML 스키마는 항상 lint, typecheck를 개별 필드로 사용한다.
 
@@ -160,7 +161,7 @@ worktree 격리는 사용하지 않는다. 비용이 높고, 충돌을 뒤로 �
 
 캐시가 존재하면 재사용한다. 단, 아래 조건에서 재감지한다:
 
-- `package.json`, `pyproject.toml`, `go.mod`, `Makefile`, `Justfile`, `docker-compose.yml` 등 프로젝트 설정 파일의 mtime이 `detected_at`보다 최신인 경우
+- `package.json`, `pyproject.toml`, `go.mod`, `Makefile`, `Justfile`, `docker-compose.yml`, `playwright.config.*`, `cypress.config.*` 등 프로젝트 설정 파일의 mtime이 `detected_at`보다 최신인 경우
 - 캐시에 기록된 명령이 실행 시 "command not found"로 실패하는 경우
 - 사용자가 명시적으로 재감지를 요청하는 경우
 
@@ -196,7 +197,13 @@ implementer × N spawn (conflict-safe 단위는 병렬로)
     ↓
 computational 센서 실행 (full-branch scope, build 포함)
     ↓
+[e2e 센서가 감지되어 있고 readiness 충족 시]
+    e2e 실행 → 실패 시 실패한 테스트 정보와 함께 implementer에게 반환
+    → 재실행 (e2e만, computational 센서 재실행 불필요)
+    → 같은 E2E 실패가 3번 반복 시 사용자에게 escalation (flaky 가능성)
+    ↓
 reviewer spawn (scope: full-branch) — 필수
+    (e2e 결과도 reviewer에게 전달)
     ↓
 피드백 루프 (필요 시)
     ↓
