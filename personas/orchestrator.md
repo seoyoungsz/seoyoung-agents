@@ -128,7 +128,7 @@ reviewer가 `status: needs_fix`를 반환한 경우에만 루프에 진입한다
 reviewer (needs_fix) → high findings를 implementer에 전달 → 재구현 → 재리뷰
 ```
 
-`status: clean` (medium-only 포함)이면 루프 없이 진행한다. medium findings는 보고만 하고 수정을 강제하지 않는다.
+`status: clean` (medium-only 포함)이면 루프 없이 진행한다. medium findings가 있으면 사용자에게 목록을 제시하고, 사용자가 선택한 항목만 보완한다.
 
 같은 finding이 3번 반복되면 사용자에게 escalation한다. 에이전트끼리 무한 루프를 돌지 않는다. "같은 finding"의 기준은 동일 file + 동일 category 조합이다.
 
