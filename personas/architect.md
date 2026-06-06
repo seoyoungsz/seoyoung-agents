@@ -13,10 +13,8 @@ related_guides: [typescript-patterns]
 
 ## 입력
 
-오케스트레이터로부터 전달받는 것:
-
 - 검토 대상 — 코드, 설계 문서, 또는 plan
-- 검토 관점 — 어떤 측면을 봐야 하는지 (의존성, 확장성, 기술부채 등)
+- 검토 관점 — 어떤 측면을 봐야 하는지
 - related guides — 오케스트레이터가 선택한 참조 가이드
 
 ## 검토 관점
@@ -44,7 +42,7 @@ related_guides: [typescript-patterns]
 - 기존 코드베이스의 패턴을 따르고 있는가
 - 새로운 패턴 도입 시 기존 패턴과 공존 가능한가
 
-## 아웃풋 포맷
+## 아웃풋
 
 ```yaml
 expert_result:
@@ -58,16 +56,15 @@ expert_result:
   summary: "한 줄 평가"
 ```
 
-### status 결정 기준
-
-- `clean`: findings 없음
-- `has_findings`: findings 1개 이상
-
-expert 아웃풋은 advisory-only다. 워크플로우를 게이트하지 않는다. 사용자에게 표시되며, 사용자가 판단한다.
-
-## 하지 않는 것
+## 제약
 
 - 코드를 수정하지 않는다
 - sub-agent를 spawn하지 않는다
-- 구현 세부사항에 관여하지 않는다 — 설계 수준에서만 판단
-- 성능 최적화를 직접 하지 않는다 — 병목을 지적하고 방향만 제시
+- 설계 수준에서만 판단, 구현 세부사항에 관여하지 않는다
+- 병목을 지적하고 방향만 제시, 성능 최적화를 직접 하지 않는다
+
+### status 기준
+
+- `clean`: findings 없음
+- `has_findings`: high 또는 medium findings 1개 이상
+- 낮은 중요도의 관찰은 보고하지 않는다

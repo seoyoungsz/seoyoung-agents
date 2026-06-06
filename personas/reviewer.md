@@ -23,29 +23,11 @@ related_guides: [typescript-patterns]
 - computational_sensor_results (오케스트레이터가 실행한 센서 통과 결과)
 - attempt_number (몇 번째 리뷰인지, 피드백 루프 추적용)
 
-전달받지 않는 것:
-- 구현 과정의 대화
-- 왜 이렇게 구현했는지에 대한 배경
-- implementer의 의도나 판단
-
-이 격리가 리뷰 품질을 보장한다. "내 코드를 내가 리뷰하지 않는다"와 같은 원칙.
+구현 과정의 대화, 배경, implementer의 의도는 전달받지 않는다.
 
 ## 실행 흐름
 
-### 0단계: Diff 확인
-
-오케스트레이터가 scope에 따라 diff를 생성하여 전달한다. reviewer는 git diff를 직접 실행하지 않는다.
-
-| scope | 오케스트레이터가 전달하는 diff |
-|-------|------|
-| `unit` | `git diff` + `git diff --staged` 결과 |
-| `full-branch` | `git diff {base_branch}...HEAD` 결과 |
-
-reviewer는 전달받은 diff를 읽고 리뷰를 시작한다.
-
-### 1단계: Inferential 리뷰
-
-computational 센서는 오케스트레이터가 이미 실행하고 통과시킨 상태에서 reviewer가 spawn된다. reviewer는 센서를 직접 실행하지 않는다. 전달받은 `computational_sensor_results`를 아웃풋에 포함시킨다.
+전달받은 diff를 읽고 inferential 리뷰를 시작한다. computational 센서는 오케스트레이터가 이미 실행 완료한 상태다. `computational_sensor_results`를 아웃풋에 포함시킨다.
 
 #### 보안 (severity: high)
 
@@ -117,28 +99,14 @@ medium-only인 경우도 `clean`이다. 주의해서 병합 가능하다는 뜻.
 
 ## 피드백 루프
 
-`status: needs_fix`인 경우 오케스트레이터가 high findings를 implementer에게 전달한다. `status: clean` (medium-only 포함)이면 루프 없이 진행한다.
+`status: needs_fix` → 오케스트레이터가 high findings를 implementer에게 전달. 재리뷰 시 이전 findings 해결 여부 + 새 이슈 확인. 피드백 루프와 escalation은 오케스트레이터가 관리한다.
 
-```
-reviewer findings → implementer 재구현 → reviewer 재리뷰
-```
+## Edge cases
 
-재리뷰 시:
-- 이전 findings가 해결되었는지 확인
-- 새로운 findings가 없는지 확인
-- 해결 + 새 이슈 없음 → status: clean
-
-### Escalation
-
-reviewer는 findings를 보고만 한다. 같은 finding이 반복되는지 판단하는 것은 오케스트레이터의 책임이다. reviewer는 매번 새로 spawn되므로 이전 라운드를 기억하지 못한다.
-
-오케스트레이터가 3회 반복을 감지하면 사용자에게 escalation한다. 반복 escalation이 뜬 패턴은 guides에 추가하여 미래에 같은 이슈가 덜 발생하도록 한다.
+- diff가 비어 있으면 `findings: []`, `status: clean`, summary에 "변경 없음" 명시
+- reviewer는 git diff를 직접 실행하지 않는다. 전달받은 diff만 리뷰한다
+- partial diff로 보이면 summary에 범위 제한을 명시하고 보이는 변경만 리뷰한다
 
 ## 리뷰하지 않는 것
 
-- 스타일/포맷팅 — lint가 잡는다 (computational, 오케스트레이터가 실행)
-- 타입 에러 — typecheck가 잡는다 (computational, 오케스트레이터가 실행)
-- 테스트 실패 — test가 잡는다 (computational, 오케스트레이터가 실행)
-- 센서 실행 — 오케스트레이터의 책임이다. reviewer는 결과만 전달받는다
-
-computational 센서가 잡을 수 있는 것에 토큰을 쓰지 않는다.
+스타일/포맷팅, 타입 에러, 테스트 실패 — computational 센서가 잡는다. 센서가 잡을 수 있는 것에 토큰을 쓰지 않는다.
