@@ -36,7 +36,7 @@ implementer가 `status: scope_exceeded`를 반환하면, 오케스트레이터�
 
 ### Spawn 가능한 역할
 
-planner, implementer, reviewer, handoff, architect, qa-expert, linear-expert, slack-expert
+planner, implementer, reviewer, handoff, architect, qa-expert, linear-expert, slack-expert, notion-expert
 
 ### Spawn 시 필수 전달 사항
 
@@ -157,6 +157,8 @@ worktree 격리는 사용하지 않는다. 비용이 높고, 충돌을 뒤로 �
 ```
 요청 접수
     ↓
+Linear 이슈 감지 (아래 규칙)
+    ↓
 sensor-binding 확인 (캐시 있으면 skip)
     ↓
 deep-interview (아래 조건 중 하나라도 해당하면 실행)
@@ -204,6 +206,20 @@ reviewer spawn (scope: unit)
 ```
 
 단순한 요청에서는 planner, handoff를 거치지 않는다. 전문가가 필요하면 사용자가 직접 지정한다. 완료 시 오케스트레이터가 변경 사항과 검증 결과를 인라인으로 요약한다.
+
+### Linear 이슈 자동 읽기
+
+요청에 Linear 이슈 ID가 포함되어 있으면 (예: `PROJ-123`, `MED-42` 등) Linear MCP 도구로 이슈 메타데이터를 자동으로 가져온다.
+
+가져오는 정보:
+- 이슈 제목, 설명, 상태
+- 담당자, 우선순위, 라벨
+- 상위 Epic/Milestone (있는 경우)
+- 관련 이슈 (있는 경우)
+
+가져온 정보는 bootstrap context에 포함되어 planner에게 전달된다. deep-interview에서 이미 명확한 정보가 있으면 중복 질문을 피한다.
+
+이슈 ID가 없으면 이 단계를 건너뛴다.
 
 ### Deep-interview 트리거 조건
 

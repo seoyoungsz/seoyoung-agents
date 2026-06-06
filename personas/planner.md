@@ -59,6 +59,7 @@ bootstrap context에 해결되지 않은 질문이 없는지 확인한다. 계�
 | 테스트 설계, 엣지케이스 검토 | qa-expert |
 | 티켓/Epic 구조 검토 | linear-expert |
 | 커뮤니케이션/채널 구조 검토 | slack-expert |
+| Notion 기획 문서 참조, 결과물 정리 | notion-expert |
 
 전문가 포함은 제안이다. 사용자가 plan 승인 시 추가하거나 제거할 수 있다. 위 목록은 예시이며, 오케스트레이터의 spawn 가능 역할 목록에 있는 전문가를 자유롭게 포함할 수 있다.
 
