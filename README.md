@@ -38,7 +38,7 @@ seoyoung-agents/
 │   ├── testing-strategy     # (틀)
 │   ├── ci-cd                # (틀)
 │   ├── infrastructure-as-code # (틀)
-│   ├── git-workflow         # (틀)
+│   ├── git-workflow         # 커밋 컨벤션 완성, 브랜치/PR은 틀
 │   ├── docker               # (틀)
 │   ├── postgresql           # (틀)
 │   ├── aws                  # (틀)
