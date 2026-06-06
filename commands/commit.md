@@ -20,7 +20,6 @@ description: diff를 분석하고 git-workflow 컨벤션에 맞춰 커밋을 생
 6. 커밋 메시지 작성:
    - subject: `<type>: <summary>` (72자 이하)
    - body: `- <what and why changed>` bullets
-   - trailer: Co-Authored-By
 7. 커밋 메시지를 사용자에게 제시하고 확인 후 커밋
 
 ## 프로젝트별 커스터마이즈

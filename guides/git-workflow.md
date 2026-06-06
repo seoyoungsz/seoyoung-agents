@@ -23,14 +23,14 @@ metadata:
 
 ### Type (필수)
 
-| type | 용도 |
-|------|------|
-| feat | 새 기능 |
-| fix | 버그 수정 |
+| type     | 용도                     |
+| -------- | ------------------------ |
+| feat     | 새 기능                  |
+| fix      | 버그 수정                |
 | refactor | 동작 변경 없는 구조 개선 |
-| test | 테스트 추가/수정 |
-| docs | 문서 변경 |
-| chore | 빌드, 설정, 의존성 등 |
+| test     | 테스트 추가/수정         |
+| docs     | 문서 변경                |
+| chore    | 빌드, 설정, 의존성 등    |
 
 ### 규칙
 
@@ -40,12 +40,6 @@ metadata:
 - body에 `Summary:`, `Rationale:`, `Tests:` 같은 섹션 헤더 금지
 - 한국어 기본, 프로젝트 설정에 따라 영어 가능
 
-### Trailer
-
-```
-Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
-```
-
 ### 예시
 
 ```
@@ -53,16 +47,12 @@ feat: 실시간 알림 기능 추가
 
 - 마켓 해결 시 구독자에게 알림을 보내도록 NotificationService 구현
 - BullMQ 기반 큐로 비동기 전송 처리
-
-Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
 ```
 
 ```
 fix(PROJ-42): 로그인 리다이렉트 조건 보정
 
 - 세션 복원 시 의도한 화면으로 돌아가도록 리다이렉트 조건 수정
-
-Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
 ```
 
 ### 커밋 단위
