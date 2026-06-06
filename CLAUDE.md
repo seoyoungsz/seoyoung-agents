@@ -18,3 +18,4 @@
 - `/review-branch` — full-branch 리뷰
 - `/commit` — 컨벤션에 맞춰 커밋
 - `/e2e` — E2E 테스트 실행 + 결과 요약
+- `/cross-review` — 에이전트 간 교차 리뷰 (Claude↔Codex)

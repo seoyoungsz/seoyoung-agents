@@ -55,7 +55,8 @@ seoyoung-agents/
 │   ├── review          # /review — unit scope 리뷰
 │   ├── review-branch   # /review-branch — full-branch 리뷰
 │   ├── commit          # /commit — 컨벤션에 맞춰 커밋 생성
-│   └── e2e             # /e2e — E2E 테스트 실행 + 결과 요약
+│   ├── e2e             # /e2e — E2E 테스트 실행 + 결과 요약
+│   └── cross-review    # /cross-review — 에이전트 간 교차 리뷰
 │
 ├── sync.ts             # 배포 스크립트
 └── package.json
