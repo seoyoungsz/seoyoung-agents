@@ -1,5 +1,6 @@
 ---
-description: 현재 에이전트의 작업 결과를 다른 에이전트에게 리뷰시킨다. second opinion이 필요할 때 사용.
+name: cross-review
+description: 현재 에이전트의 작업 결과를 다른 에이전트에게 독립적으로 검증시킨다. second opinion이 필요할 때 사용.
 ---
 
 # Cross-Review
@@ -50,12 +51,11 @@ description: 현재 에이전트의 작업 결과를 다른 에이전트에게 �
 
 ## Fallback
 
-- `/codex:rescue`가 실패하거나 Codex가 사용 불가 → CE의 `ce-adversarial-reviewer` agent로 대체
-- CE reviewer가 사용 불가 → seoyoung-agents의 `reviewer` persona로 대체
+- `/codex:rescue`가 실패하거나 Codex가 사용 불가 → compound-engineering 플러그인의 `ce-adversarial-reviewer` agent로 대체
+- CE reviewer가 사용 불가 → seoyoung-agents의 reviewer persona를 fallback으로 사용한다
 - 모든 외부 리뷰어 불가 → 사용자에게 보고 후 종료
 
-## 참조
+## 플러그인
 
 - compound-engineering 플러그인 — `ce-adversarial-document-reviewer`, `ce-coherence-reviewer`, `ce-adversarial-reviewer`
 - codex 플러그인 — `/codex:rescue`
-- `personas/reviewer.md` — 최종 fallback 리뷰어

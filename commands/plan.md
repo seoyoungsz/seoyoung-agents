@@ -33,4 +33,5 @@ orchestrator를 거치지 않고 planner를 직접 spawn한다. plan만 필요�
 - `guides/deep-interview.md` — 요구사항 명확화
 - `personas/planner.md` — 단위 분해, spawn manifest
 - `adapters/sensor-binding.md` — 센서 감지 규칙
-- `personas/orchestrator.md` — Plan 저장/로드 상세 규칙
+- `personas/orchestrator.md` — Plan Persistence 원칙
+- `skills/task/SKILL.md` — Step 1-5, Step 2 상세 운영 로직

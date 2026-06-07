@@ -34,9 +34,10 @@
 ## 프로젝트 구조
 
 ```
-personas/    — 에이전트 정의 (.md)
-guides/      — 스킬/지식 (.md)
-commands/    — 슬래시 커맨드 (.md)
+personas/    — 에이전트 역할 계약 (.md)
+skills/      — 자기완결 SKILL.md (commit, e2e, cross-review, task)
+commands/    — orchestrator 참조형 커맨드 (.md) (plan, review, review-branch)
+guides/      — 도메인 지식 (.md)
 adapters/    — 회사 도구 연결 (.md)
 sync.ts      — 배포 스크립트
 ```
@@ -55,6 +56,12 @@ sync.ts      — 배포 스크립트
 - spawnable: false는 orchestrator에만 사용
 - codex_effort는 역할별 오버라이드가 필요할 때만 추가
 - related_guides에 skeleton guide를 넣지 않는다 (내용이 채워진 후 추가)
+
+### SKILL.md (skills/<name>/SKILL.md)
+- frontmatter 필수: name, description
+- name은 폴더명과 일치
+- 자기완결: 외부 파일을 "로드하라"고 하지 않는다
+- 배포 대상: Claude만 (Codex에는 배포하지 않음)
 
 ### guide (.md)
 - frontmatter 필수: name, description, metadata.type

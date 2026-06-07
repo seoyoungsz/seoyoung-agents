@@ -12,13 +12,16 @@
 
 ## 사용 가능한 커맨드
 
-- `/plan` — 계획만 생성
+### Skills (자기완결 SKILL.md)
 - `/task` — 전체 오케스트레이션
-- `/review` — unit scope 리뷰
-- `/review-branch` — full-branch 리뷰
 - `/commit` — 컨벤션에 맞춰 커밋
 - `/e2e` — E2E 테스트 실행 + 결과 요약
 - `/cross-review` — 에이전트 간 교차 리뷰 (Claude↔Codex)
+
+### Commands (orchestrator 참조형)
+- `/plan` — 계획만 생성
+- `/review` — unit scope 리뷰
+- `/review-branch` — full-branch 리뷰
 
 ## Hook 스크립트
 

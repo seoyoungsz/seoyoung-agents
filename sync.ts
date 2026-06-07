@@ -12,6 +12,7 @@ const HOME = homedir()
 interface TargetDirs {
   agents: string
   skills?: string
+  skillFolders?: string
   commands?: string
   adapters?: string
   scripts?: string
@@ -28,6 +29,7 @@ const TARGETS: Record<string, TargetConfig> = {
     dirs: {
       agents: join(HOME, ".claude", "agents"),
       skills: join(HOME, ".claude", "skills", "seoyoung"),
+      skillFolders: join(HOME, ".claude", "skills", "seoyoung"),
       commands: join(HOME, ".claude", "commands"),
       adapters: join(HOME, ".claude", "skills", "seoyoung", "adapters"),
       scripts: join(HOME, ".claude", "scripts"),
@@ -349,6 +351,87 @@ async function syncPyDir(
   return result
 }
 
+async function listDirs(dir: string): Promise<string[]> {
+  if (!existsSync(dir)) return []
+  const { readdir: readdirWithTypes } = await import("fs/promises")
+  const entries = await readdirWithTypes(dir, { withFileTypes: true })
+  return entries.filter((e) => e.isDirectory()).map((e) => e.name)
+}
+
+async function syncSkillFoldersDir(
+  srcDir: string,
+  destDir: string,
+  label: string
+): Promise<SyncResult> {
+  const result: SyncResult = { copied: [], skipped: [], removed: [] }
+
+  const skillDirs = await listDirs(srcDir)
+  if (skillDirs.length === 0) {
+    console.log(`  ${label}: no skill folders to sync`)
+    return result
+  }
+
+  for (const skillName of skillDirs) {
+    const srcFile = join(srcDir, skillName, "SKILL.md")
+    if (!existsSync(srcFile)) continue
+
+    const destSkillDir = join(destDir, skillName)
+    const destFile = join(destSkillDir, "SKILL.md")
+
+    if (existsSync(destFile)) {
+      const srcContent = await readFile(srcFile, "utf-8")
+      const destContent = await readFile(destFile, "utf-8")
+      if (srcContent === destContent) {
+        result.skipped.push(skillName)
+        continue
+      }
+    }
+
+    if (dryRun) {
+      console.log(`  [dry-run] would copy: ${skillName}/SKILL.md → ${destSkillDir}/`)
+    } else {
+      await mkdir(destSkillDir, { recursive: true })
+      await copyFile(srcFile, destFile)
+    }
+    result.copied.push(skillName)
+  }
+
+  const destDirs = await listDirs(destDir)
+  const srcSet = new Set(skillDirs)
+  for (const dir of destDirs) {
+    if (!srcSet.has(dir) && existsSync(join(destDir, dir, "SKILL.md"))) {
+      result.removed.push(dir)
+    }
+  }
+
+  return result
+}
+
+async function backupSkillFolders(
+  destDir: string,
+  backupRoot: string
+): Promise<number> {
+  const skillDirs = await listDirs(destDir)
+  let count = 0
+
+  for (const skillName of skillDirs) {
+    const srcFile = join(destDir, skillName, "SKILL.md")
+    if (!existsSync(srcFile)) continue
+
+    const backupSkillDir = join(backupRoot, skillName)
+    const destFile = join(backupSkillDir, "SKILL.md")
+
+    if (dryRun) {
+      console.log(`  [dry-run] would backup: ${skillName}/SKILL.md → ${backupRoot}/`)
+    } else {
+      await mkdir(backupSkillDir, { recursive: true })
+      await copyFile(srcFile, destFile)
+    }
+    count++
+  }
+  return count
+}
+
 function printResult(label: string, result: SyncResult) {
   const { copied, skipped, removed } = result
   if (copied.length > 0) {
@@ -406,6 +489,16 @@ async function backupTarget(target: Target, stamp: string) {
     const count = await backupDir(dir, join(backupBase, label), fileExt)
     if (count > 0) {
       console.log(`  ${label}: ${count} files backed up`)
+    }
+  }
+
+  if (config.dirs.skillFolders) {
+    const count = await backupSkillFolders(
+      config.dirs.skillFolders,
+      join(backupBase, "skillFolders")
+    )
+    if (count > 0) {
+      console.log(`  skillFolders: ${count} skills backed up`)
     }
   }
 }
@@ -467,6 +560,15 @@ async function syncTarget(target: Target) {
       "scripts → scripts"
     )
     printResult("scripts → scripts", scriptsResult)
+  }
+
+  if (config.dirs.skillFolders) {
+    const skillFoldersResult = await syncSkillFoldersDir(
+      join(SRC, "skills"),
+      config.dirs.skillFolders,
+      "skills → skillFolders"
+    )
+    printResult("skills → skillFolders", skillFoldersResult)
   }
 }
 

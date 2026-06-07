@@ -49,14 +49,16 @@ seoyoung-agents/
 ├── adapters/           # 회사 도구 연결
 │   └── sensor-binding  # 프로젝트 센서 자동 감지 규칙
 │
-├── commands/           # 슬래시 커맨드
+├── skills/             # 자기완결 SKILL.md — 외부 참조 없이 단독 실행
+│   ├── task/SKILL.md       # /task — 전체 오케스트레이션 워크플로우
+│   ├── commit/SKILL.md     # /commit — 컨벤션에 맞춰 커밋 생성
+│   ├── e2e/SKILL.md        # /e2e — E2E 테스트 실행 + 결과 요약
+│   └── cross-review/SKILL.md # /cross-review — 에이전트 간 교차 리뷰
+│
+├── commands/           # orchestrator 참조형 커맨드
 │   ├── plan            # /plan — plan만 생성 (구현 안 함)
-│   ├── task            # /task — 전체 오케스트레이션 워크플로우
 │   ├── review          # /review — unit scope 리뷰
-│   ├── review-branch   # /review-branch — full-branch 리뷰
-│   ├── commit          # /commit — 컨벤션에 맞춰 커밋 생성
-│   ├── e2e             # /e2e — E2E 테스트 실행 + 결과 요약
-│   └── cross-review    # /cross-review — 에이전트 간 교차 리뷰
+│   └── review-branch   # /review-branch — full-branch 리뷰
 │
 ├── scripts/            # hook 스크립트
 │   ├── guard.py        # PreToolUse — 위험 명령어 차단
@@ -216,6 +218,7 @@ npm run sync:codex
 | 소스 | 대상 | 포맷 |
 |------|------|------|
 | `personas/` | `~/.claude/agents/` | .md (복사) |
+| `skills/` | `~/.claude/skills/seoyoung/<name>/` | SKILL.md (폴더 구조) |
 | `guides/` | `~/.claude/skills/seoyoung/` | .md (복사) |
 | `commands/` | `~/.claude/commands/` | .md (복사) |
 | `adapters/` | `~/.claude/skills/seoyoung/adapters/` | .md (복사) |
@@ -227,7 +230,7 @@ npm run sync:codex
 |------|------|------|
 | `personas/` | `~/.codex/agents/` | .toml (md → toml 변환) |
 
-Codex는 personas만 배포한다. guides, commands, adapters는 Codex에 해당 개념이 없다.
+Codex는 personas만 배포한다. skills, guides, commands, adapters는 Codex에 해당 개념이 없다.
 
 모델 매핑:
 
