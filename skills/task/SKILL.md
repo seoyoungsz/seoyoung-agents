@@ -27,7 +27,7 @@ description: 오케스트레이터 역할을 맡아 전체 워크플로우를 �
 
 ---
 
-## Step 1: Bootstrap — 요청 분류, Linear, Deep-interview, Plan 로드
+## Step 1: Bootstrap — 요청 분류, Linear, Notion, Plan 로드, Deep-interview
 
 ### 1-1. 요청 분류
 
@@ -63,20 +63,7 @@ description: 오케스트레이터 역할을 맡아 전체 워크플로우를 �
 
 Notion 문서가 지정되지 않은 경우 이 단계를 건너뛴다.
 
-### 1-4. Deep-interview 트리거 조건
-
-복잡한 요청에서 아래 중 하나라도 해당하면 planner 전에 `guides/deep-interview.md`를 로드하여 인터뷰를 수행한다:
-
-- 목표가 명시되지 않았거나 여러 해석이 가능
-- 범위(포함/제외)가 불분명
-- 완료 기준이 없거나 모호
-- 사용자의 요청이 한 문장 이하로 짧고 맥락이 부족
-
-요구사항이 이미 명확하면 (목표, 범위, 제약, 완료 기준이 모두 식별 가능) 건너뛴다.
-
-interview_result는 bootstrap context의 일부다. 오케스트레이터가 영향받는 패키지/디렉토리 목록과 sensor-binding 결과를 추가하여 완전한 bootstrap context를 구성한 후 planner에게 전달한다.
-
-### 1-5. Plan 로드
+### 1-4. Plan 로드
 
 `.claude/docs/`에서 `.md` 파일을 탐색한다. frontmatter에 `slug`와 `status` 필드가 모두 존재하는 파일만 plan으로 인식한다. slug의 정본(source of truth)은 frontmatter의 `slug` 필드다. 파일명은 slug와 일치시키되, 불일치 시 frontmatter를 우선한다.
 
@@ -92,6 +79,21 @@ interview_result는 bootstrap context의 일부다. 오케스트레이터가 영
    - 새로 시작: draft를 무시하고 기존 flow로 진행
 
 3. 해당하는 plan이 없으면 탐색 단계를 건너뛰고 기존 flow로 진행한다
+
+### 1-5. Deep-interview 트리거 조건
+
+복잡한 요청에서 아래 중 하나라도 해당하면 planner 전에 `/deep-interview` skill을 invoke하여 인터뷰를 수행한다:
+
+- 목표가 명시되지 않았거나 여러 해석이 가능
+- 범위(포함/제외)가 불분명
+- 완료 기준이 없거나 모호
+- 사용자의 요청이 한 문장 이하로 짧고 맥락이 부족
+
+요구사항이 이미 명확하면 (목표, 범위, 제약, 완료 기준이 모두 식별 가능) 건너뛴다. Notion extracted 데이터가 4축을 모두 충족하는 경우에도 건너뛴다.
+
+skill invoke 시 이미 확보한 Linear 메타데이터와 Notion extracted를 입력 컨텍스트로 전달하여 중복 질문을 방지한다.
+
+interview_result는 bootstrap context의 일부다. 오케스트레이터가 영향받는 패키지/디렉토리 목록과 sensor-binding 결과를 추가하여 완전한 bootstrap context를 구성한 후 planner에게 전달한다.
 
 ---
 
@@ -300,9 +302,9 @@ Linear 이슈 감지 (Step 1-2)
     ↓
 notion-expert 읽기 (Notion 기획 문서가 지정된 경우, Step 1-3)
     ↓
-plan 로드 탐색 (.claude/docs/ 탐색 → approved/draft 제안, Step 1-5)
+plan 로드 탐색 (.claude/docs/ 탐색 → approved/draft 제안, Step 1-4)
     ↓
-deep-interview (조건 해당 시, Step 1-4)
+deep-interview skill invoke (조건 해당 시, Step 1-5)
     ↓
 planner spawn (단위 분해 + spawn manifest + 전문가 포함, existing_plan_slugs 전달, Step 2-1)
     ↓

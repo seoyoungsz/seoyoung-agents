@@ -28,10 +28,10 @@ const TARGETS: Record<string, TargetConfig> = {
   claude: {
     dirs: {
       agents: join(HOME, ".claude", "agents"),
-      skills: join(HOME, ".claude", "skills", "seoyoung"),
-      skillFolders: join(HOME, ".claude", "skills", "seoyoung"),
+      skills: join(HOME, ".claude", "skills"),
+      skillFolders: join(HOME, ".claude", "skills"),
       commands: join(HOME, ".claude", "commands"),
-      adapters: join(HOME, ".claude", "skills", "seoyoung", "adapters"),
+      adapters: join(HOME, ".claude", "skills", "adapters"),
       scripts: join(HOME, ".claude", "scripts"),
     },
     backupDir: join(HOME, ".claude", "backup"),

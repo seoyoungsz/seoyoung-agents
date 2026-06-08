@@ -31,7 +31,6 @@ seoyoung-agents/
 │   └── notion-expert   # Notion 기획 문서 읽기/결과물 정리
 │
 ├── guides/             # 스킬 — "어떻게" 하는가
-│   ├── deep-interview  # 요구사항 명확화 (소크라테스식)
 │   ├── typescript-patterns  # TS 코드 패턴/안티패턴
 │   ├── react-patterns       # (틀)
 │   ├── api-design           # (틀)
@@ -53,7 +52,8 @@ seoyoung-agents/
 │   ├── task/SKILL.md       # /task — 전체 오케스트레이션 워크플로우
 │   ├── commit/SKILL.md     # /commit — 컨벤션에 맞춰 커밋 생성
 │   ├── e2e/SKILL.md        # /e2e — E2E 테스트 실행 + 결과 요약
-│   └── cross-review/SKILL.md # /cross-review — 에이전트 간 교차 리뷰
+│   ├── cross-review/SKILL.md # /cross-review — 에이전트 간 교차 리뷰
+│   └── deep-interview/SKILL.md # /deep-interview — 소크라테스식 요구사항 명확화
 │
 ├── commands/           # orchestrator 참조형 커맨드
 │   ├── plan            # /plan — plan만 생성 (구현 안 함)
@@ -84,7 +84,7 @@ seoyoung-agents/
 ```
 기존 plan 탐색 (.claude/docs/)
     ↓
-요청 접수 → deep-interview (모호하면) → planner → plan 제시
+요청 접수 → /deep-interview (모호하면) → planner → plan 제시
     ↓
 .claude/docs/{slug}.md에 저장 (status: draft)
     ↓
@@ -106,7 +106,7 @@ sensor-binding 확인
     ↓
 [복잡 + 저장된 plan] plan 로드 → planner skip → implementer × N
                      → [unit reviewer] → full-branch reviewer → handoff
-[복잡 + plan 없음]   deep-interview → planner → plan 저장 → 사용자 승인
+[복잡 + plan 없음]   /deep-interview → planner → plan 저장 → 사용자 승인
                      → implementer × N → [unit reviewer] → full-branch reviewer → handoff
 [단순]               implementer → reviewer → 완료
 ```
@@ -218,10 +218,10 @@ npm run sync:codex
 | 소스 | 대상 | 포맷 |
 |------|------|------|
 | `personas/` | `~/.claude/agents/` | .md (복사) |
-| `skills/` | `~/.claude/skills/seoyoung/<name>/` | SKILL.md (폴더 구조) |
-| `guides/` | `~/.claude/skills/seoyoung/` | .md (복사) |
+| `skills/` | `~/.claude/skills/<name>/` | SKILL.md (폴더 구조) |
+| `guides/` | `~/.claude/skills/` | .md (복사) |
 | `commands/` | `~/.claude/commands/` | .md (복사) |
-| `adapters/` | `~/.claude/skills/seoyoung/adapters/` | .md (복사) |
+| `adapters/` | `~/.claude/skills/adapters/` | .md (복사) |
 | `scripts/` | `~/.claude/scripts/` | .py (복사) |
 
 ### Codex
@@ -307,7 +307,7 @@ rm ~/.claude/agents/old-agent.md
 global guides는 범용 원칙만 담고 있다. 프로젝트에 맞는 내용이 필요하면 프로젝트 `.claude/skills/`에 같은 이름의 guide를 넣으면 자동으로 오버라이드된다.
 
 ```
-~/.claude/skills/seoyoung/react-patterns.md     ← global (범용 원칙)
+~/.claude/skills/react-patterns.md               ← global (범용 원칙)
 프로젝트/.claude/skills/react-patterns.md        ← 프로젝트 레벨 (자동 오버라이드)
 ```
 

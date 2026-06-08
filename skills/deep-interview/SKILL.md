@@ -1,8 +1,6 @@
 ---
 name: deep-interview
 description: 모호한 요청을 소크라테스식 질문으로 인터뷰해 실행 가능한 요구사항으로 정리한다. planner 전에 사용한다.
-metadata:
-  type: guide
 ---
 
 # Deep Interview
@@ -10,6 +8,17 @@ metadata:
 모호한 요청을 바로 실행하지 않는다. 명확한 요구사항으로 정리한 후 planner에게 넘긴다.
 
 원칙: 질문을 한꺼번에 쏟아내지 않는다. 가장 큰 불확실성을 하나씩 해소한다.
+
+## 입력 컨텍스트
+
+호출자(`/task`, `/plan`)가 이미 확보한 데이터가 있으면 인터뷰 시작 전에 전달받는다:
+
+- **Linear 이슈 메타데이터** — 제목, 설명, 상태 등
+- **Notion extracted 데이터** — 기획 문서에서 추출한 요구사항
+
+이미 명확한 축은 질문하지 않는다. 예: Linear 이슈에 목표가 명시되어 있으면 Goal 질문을 건너뛴다. Notion extracted가 4축(goal, scope, constraints, completion criteria)을 모두 충족하면 인터뷰 자체를 건너뛴다.
+
+단독 호출(`/deep-interview`) 시에는 입력 컨텍스트 없이 시작한다.
 
 ## 질문 축
 
@@ -48,9 +57,9 @@ metadata:
 
 인터뷰 중 해결할 수 없는 질문이 남으면 인터뷰를 종료하지 않고 사용자에게 답을 구한다. 모든 축이 명확해야 종료할 수 있다.
 
-## 종료 시 출력
+## 출력 계약
 
-전체 대화록이 아니라 결정사항만 요약한다.
+종료 시 전체 대화록이 아니라 결정사항만 요약한다. 아래 top-level YAML 형태를 그대로 출력한다. 래퍼(`skill_result` 등)로 감싸지 않는다.
 
 ```yaml
 interview_result:
@@ -61,11 +70,13 @@ interview_result:
   completion_criteria: [...]
 ```
 
-이 출력은 planner bootstrap context의 일부다. 오케스트레이터가 interview_result에 아래를 추가하여 완전한 bootstrap context를 구성한다:
+## 역할 경계
 
-- 영향받는 패키지/디렉토리 목록 (오케스트레이터가 코드베이스에서 파악)
-- sensor-binding 결과
+이 skill은 **요구사항 명확화 전용**이다. bootstrap context 완성(영향받는 패키지/디렉토리 목록, sensor-binding 결과 추가)은 호출자(`/task`, `/plan`)의 책임이다.
 
-## 사용 시점
+단독 호출 시(`/deep-interview`) `interview_result`만 출력하고 종료한다. planner spawn이나 구현은 하지 않는다.
 
-orchestrator가 복잡한 요청을 받았을 때, 요구사항이 모호하면 planner 전에 이 guide를 로드하여 인터뷰를 수행한다. 요구사항이 이미 명확하면 건너뛴다.
+## 유사 도구와의 구분
+
+- `clarify:vague` — 범용 요구사항 명확화. deep-interview는 이 프로젝트의 planner bootstrap에 특화된 4축 구조와 `interview_result` YAML 출력을 제공한다.
+- `ce-brainstorm` — 탐색적 아이디어 발산. deep-interview는 이미 방향이 정해진 요청의 불확실성을 해소한다.

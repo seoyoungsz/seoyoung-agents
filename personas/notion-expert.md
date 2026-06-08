@@ -25,7 +25,7 @@ Notion에서 기획 문서를 가져와 워크플로우에 전달한다.
 ### 용도
 
 - PRD, 스펙 문서를 가져와 planner의 bootstrap context로 전달
-- deep-interview 대신 이미 정리된 요구사항 활용
+- `/deep-interview` 대신 이미 정리된 요구사항 활용
 - 기존 의사결정 로그 참조
 
 읽기 모드는 planner **전에** 실행된다 (pre-planner). `extracted` 필드가 bootstrap context에 포함된다.
