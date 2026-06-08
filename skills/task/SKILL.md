@@ -65,7 +65,7 @@ Notion 문서가 지정되지 않은 경우 이 단계를 건너뛴다.
 
 ### 1-4. Plan 로드
 
-`.claude/docs/`에서 `.md` 파일을 탐색한다. frontmatter에 `slug`와 `status` 필드가 모두 존재하는 파일만 plan으로 인식한다. slug의 정본(source of truth)은 frontmatter의 `slug` 필드다. 파일명은 slug와 일치시키되, 불일치 시 frontmatter를 우선한다.
+`docs/`에서 `.md` 파일을 탐색한다. frontmatter에 `slug`와 `status` 필드가 모두 존재하는 파일만 plan으로 인식한다. slug의 정본(source of truth)은 frontmatter의 `slug` 필드다. 파일명은 slug와 일치시키되, 불일치 시 frontmatter를 우선한다.
 
 분기 처리:
 
@@ -103,7 +103,7 @@ interview_result는 bootstrap context의 일부다. 오케스트레이터가 영
 
 bootstrap context(objective, scope, constraints, Linear 메타데이터, interview_result, notion-expert extracted)와 함께 planner를 spawn한다.
 
-planner를 spawn할 때 `.claude/docs/`의 파일 목록을 확인하고, 각 파일명에서 `.md`를 제거한 slug 목록을 `existing_plan_slugs`로 전달한다.
+planner를 spawn할 때 `docs/`의 파일 목록을 확인하고, 각 파일명에서 `.md`를 제거한 slug 목록을 `existing_plan_slugs`로 전달한다.
 
 planner가 반환하는 것:
 - 인간이 읽을 수 있는 plan 요약
@@ -115,7 +115,7 @@ planner 실패 시 사용자에게 보고하고, 수동 범위 지정을 요청�
 
 ### 2-2. Plan 저장
 
-planner가 plan을 반환하면 `.claude/docs/{slug}.md`에 저장한다.
+planner가 plan을 반환하면 `docs/{slug}.md`에 저장한다.
 
 저장 포맷:
 
@@ -302,7 +302,7 @@ Linear 이슈 감지 (Step 1-2)
     ↓
 notion-expert 읽기 (Notion 기획 문서가 지정된 경우, Step 1-3)
     ↓
-plan 로드 탐색 (.claude/docs/ 탐색 → approved/draft 제안, Step 1-4)
+plan 로드 탐색 (docs/ 탐색 → approved/draft 제안, Step 1-4)
     ↓
 deep-interview skill invoke (조건 해당 시, Step 1-5)
     ↓
@@ -310,7 +310,7 @@ planner spawn (단위 분해 + spawn manifest + 전문가 포함, existing_plan_
     ↓
 planner 실패 시 → 사용자에게 보고, 수동 범위 지정 요청
     ↓
-plan 저장 (.claude/docs/{slug}.md, status: draft, Step 2-2)
+plan 저장 (docs/{slug}.md, status: draft, Step 2-2)
     ↓
 사용자 plan 승인 (전문가 추가/제거 가능, Step 2-3)
     ↓

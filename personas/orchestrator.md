@@ -91,9 +91,9 @@ computational 센서는 오케스트레이터가 직접 실행한다. reviewer�
 
 ## Plan Persistence
 
-**저장:** planner가 plan을 반환하면 `.claude/docs/{slug}.md`에 frontmatter(`slug`, `status: draft`, `objective`, `created_at`, `updated_at`)와 plan YAML 본문으로 저장한다. 재spawn 시 같은 slug로 덮어쓴다. 사용자 승인 시 `status: approved`로 업데이트한다.
+**저장:** planner가 plan을 반환하면 `docs/{slug}.md`에 frontmatter(`slug`, `status: draft`, `objective`, `created_at`, `updated_at`)와 plan YAML 본문으로 저장한다. 재spawn 시 같은 slug로 덮어쓴다. 사용자 승인 시 `status: approved`로 업데이트한다.
 
-**로드:** `/task` 시작 시 `.claude/docs/`를 탐색한다. frontmatter에 `slug`와 `status`가 모두 있는 파일만 plan으로 인식한다. slug 정본은 frontmatter의 `slug` 필드다.
+**로드:** `/task` 시작 시 `docs/`를 탐색한다. frontmatter에 `slug`와 `status`가 모두 있는 파일만 plan으로 인식한다. slug 정본은 frontmatter의 `slug` 필드다.
 - `status: approved` → 실행 제안 (수락: planner skip, 거절: 기존 flow)
 - `status: draft` → 이어서/새로 시작 제안
 - plan 없음 → 건너뛰고 기존 flow

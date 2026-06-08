@@ -18,7 +18,7 @@ related_guides: []
 - 영향받는 패키지/디렉토리 목록
 - sensor-binding 결과 — 프로젝트의 검증 명령
 - related guides — 오케스트레이터가 선택한 참조 가이드
-- existing_plan_slugs — `.claude/docs/`에 이미 존재하는 plan slug 목록
+- existing_plan_slugs — `docs/`에 이미 존재하는 plan slug 목록
 
 ## 실행 절차
 
@@ -32,7 +32,7 @@ bootstrap context에 해결되지 않은 질문이 없는지 확인한다. 계�
 
 ### 3. Slug 결정
 
-plan을 식별하는 slug를 결정한다. slug는 `.claude/docs/{slug}.md`에 plan을 저장할 때 파일명으로 사용된다.
+plan을 식별하는 slug를 결정한다. slug는 `docs/{slug}.md`에 plan을 저장할 때 파일명으로 사용된다.
 
 **생성 규칙:**
 1. objective에서 핵심 키워드 2-3개를 추출하여 kebab-case로 조합한다 (예: `add-plan-persistence`)
@@ -119,7 +119,7 @@ plan:
 
 ### 필드 용도
 
-- `slug`: plan의 고유 식별자. `.claude/docs/{slug}.md`에 저장할 때 파일명으로 사용된다. 실행 절차 3단계에서 결정한다
+- `slug`: plan의 고유 식별자. `docs/{slug}.md`에 저장할 때 파일명으로 사용된다. 실행 절차 3단계에서 결정한다
 - `status`: planner의 진행 상태 — `ready`(실행 가능) 또는 `needs_user_input`(모호함 해소 필요). **persistence status와 별개다**
 - `units`: 오케스트레이터가 검증하고 implementer에게 전달. conflict-safe는 `scope_write` 기준으로 판단
 - `experts`: planner의 추천. 사용자가 plan 승인 시 추가/제거 가능
@@ -128,7 +128,7 @@ plan:
 
 ### Persistence status (plan status와 별개)
 
-plan을 `.claude/docs/`에 저장할 때는 plan 자체의 `status`(`ready` | `needs_user_input`)와 독립적인 persistence status를 사용한다:
+plan을 `docs/`에 저장할 때는 plan 자체의 `status`(`ready` | `needs_user_input`)와 독립적인 persistence status를 사용한다:
 
 - `draft` — planner가 생성했으나 사용자가 아직 승인하지 않은 상태. 오케스트레이터가 plan을 파일에 저장할 때 초기값으로 설정한다
 - `approved` — 사용자가 plan을 승인하여 실행이 시작된 상태. 오케스트레이터가 실행 전에 갱신한다

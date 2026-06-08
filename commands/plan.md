@@ -8,7 +8,7 @@ orchestrator를 거치지 않고 planner를 직접 spawn한다. plan만 필요�
 
 ## 실행 흐름
 
-1. `.claude/docs/`에서 기존 plan 탐색 (상세 규칙은 `personas/orchestrator.md`의 Plan 로드 참조)
+1. `docs/`에서 기존 plan 탐색 (상세 규칙은 `personas/orchestrator.md`의 Plan 로드 참조, 경로는 프로젝트 루트 기준)
    - frontmatter에 `slug`와 `status`가 모두 있는 `.md` 파일만 plan으로 인식
    - `status: approved`인 plan이 있으면 수정/새로 시작 제안
    - `status: draft`인 plan만 있으면 이어서/새로 시작 제안
@@ -17,9 +17,9 @@ orchestrator를 거치지 않고 planner를 직접 spawn한다. plan만 필요�
 3. 영향받는 패키지/디렉토리를 코드베이스에서 파악
 4. sensor-binding 확인 (`.claude/sensor-cache.json` 없으면 감지 실행)
 5. bootstrap context 구성: interview_result(Step 2) + 영향 범위(Step 3) + sensor-binding(Step 4)을 합산
-6. `.claude/docs/`의 파일 목록을 확인하고 slug 목록을 `existing_plan_slugs`로 전달하여 planner spawn (bootstrap context 포함)
+6. `docs/`의 파일 목록을 확인하고 slug 목록을 `existing_plan_slugs`로 전달하여 planner spawn (bootstrap context 포함)
 7. plan을 사용자에게 제시
-8. plan을 `.claude/docs/{slug}.md`에 `status: draft`로 저장
+8. plan을 `docs/{slug}.md`에 `status: draft`로 저장
 9. 사용자가 plan을 승인하면 `status: approved`로 업데이트하고 `updated_at` 갱신
 10. 끝 — implementer spawn 안 함
 
