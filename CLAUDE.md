@@ -17,7 +17,7 @@
 - `/commit` — 컨벤션에 맞춰 커밋
 - `/e2e` — E2E 테스트 실행 + 결과 요약
 - `/cross-review` — 에이전트 간 교차 리뷰 (Claude↔Codex)
-- `/deep-interview` — 모호한 요청을 소크라테스식 질문으로 요구사항 정리
+- `/deep-interview [scope]` — 요구사항 인터뷰 + 개발자 체크리스트 (scope: frontend/backend/infra/fullstack)
 
 ### Commands (orchestrator 참조형)
 - `/plan` — 계획만 생성

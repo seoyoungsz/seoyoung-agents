@@ -53,7 +53,7 @@ seoyoung-agents/
 │   ├── commit/SKILL.md     # /commit — 컨벤션에 맞춰 커밋 생성
 │   ├── e2e/SKILL.md        # /e2e — E2E 테스트 실행 + 결과 요약
 │   ├── cross-review/SKILL.md # /cross-review — 에이전트 간 교차 리뷰
-│   └── deep-interview/SKILL.md # /deep-interview — 소크라테스식 요구사항 명확화
+│   └── deep-interview/SKILL.md # /deep-interview — 요구사항 인터뷰 + 개발자 체크리스트
 │
 ├── commands/           # orchestrator 참조형 커맨드
 │   ├── plan            # /plan — plan만 생성 (구현 안 함)
@@ -106,9 +106,10 @@ sensor-binding 확인
     ↓
 [복잡 + 저장된 plan] plan 로드 → planner skip → implementer × N
                      → [unit reviewer] → full-branch reviewer → handoff
-[복잡 + plan 없음]   /deep-interview → planner → plan 저장 → 사용자 승인
+[복잡 + plan 없음]   /deep-interview (Phase 1: 요구사항 + Phase 2: 개발자 체크리스트)
+                     → planner → plan 저장 → 사용자 승인
                      → implementer × N → [unit reviewer] → full-branch reviewer → handoff
-[단순]               implementer → reviewer → 완료
+[단순]               implementer → reviewer → 완료 (deep-interview 없음)
 ```
 
 ### /review — 현재 변경 리뷰

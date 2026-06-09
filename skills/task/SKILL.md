@@ -82,14 +82,17 @@ Notion 문서가 지정되지 않은 경우 이 단계를 건너뛴다.
 
 ### 1-5. Deep-interview 트리거 조건
 
-복잡한 요청에서 아래 중 하나라도 해당하면 planner 전에 `/deep-interview` skill을 invoke하여 인터뷰를 수행한다:
+복잡한 요청에서는 항상 `/deep-interview` skill을 invoke한다. Phase 2(개발자 체크리스트)는 모든 경우에 실행되어야 하기 때문이다.
 
-- 목표가 명시되지 않았거나 여러 해석이 가능
-- 범위(포함/제외)가 불분명
-- 완료 기준이 없거나 모호
-- 사용자의 요청이 한 문장 이하로 짧고 맥락이 부족
+Phase 1(요구사항 인터뷰) 실행 여부는 deep-interview 내부에서 결정한다:
+- 아래 중 하나라도 해당하면 Phase 1을 수행한다:
+  - 목표가 명시되지 않았거나 여러 해석이 가능
+  - 범위(포함/제외)가 불분명
+  - 완료 기준이 없거나 모호
+  - 사용자의 요청이 한 문장 이하로 짧고 맥락이 부족
+- 요구사항이 이미 명확하면 (목표, 범위, 제약, 완료 기준이 모두 식별 가능) Phase 1을 건너뛴다. Notion extracted 데이터가 4축을 모두 충족하는 경우에도 Phase 1을 건너뛴다.
 
-요구사항이 이미 명확하면 (목표, 범위, 제약, 완료 기준이 모두 식별 가능) 건너뛴다. Notion extracted 데이터가 4축을 모두 충족하는 경우에도 건너뛴다.
+어느 경우든 Phase 2는 실행된다 — 기획이 명확해도 에러 상태, 테스트 전략, 보안 등 구현 레벨 결정은 별도로 필요하다.
 
 skill invoke 시 이미 확보한 Linear 메타데이터와 Notion extracted를 입력 컨텍스트로 전달하여 중복 질문을 방지한다.
 
@@ -304,7 +307,7 @@ notion-expert 읽기 (Notion 기획 문서가 지정된 경우, Step 1-3)
     ↓
 plan 로드 탐색 (docs/ 탐색 → approved/draft 제안, Step 1-4)
     ↓
-deep-interview skill invoke (조건 해당 시, Step 1-5)
+deep-interview skill invoke (항상, Step 1-5)
     ↓
 planner spawn (단위 분해 + spawn manifest + 전문가 포함, existing_plan_slugs 전달, Step 2-1)
     ↓
@@ -361,4 +364,4 @@ reviewer spawn (scope: unit)
 완료 (오케스트레이터가 변경 사항과 검증 결과 인라인 요약)
 ```
 
-단순한 요청에서는 planner, handoff를 거치지 않는다. 전문가가 필요하면 사용자가 직접 지정한다.
+단순한 요청에서는 planner, handoff, deep-interview를 거치지 않는다. Phase 2(개발자 체크리스트)는 복잡한 요청에서만 실행된다 — 단순한 요청은 영향 범위가 좁아 구현 레벨 결정을 별도로 점검할 필요가 없다. 전문가가 필요하면 사용자가 직접 지정한다.
